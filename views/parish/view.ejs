@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parish Details</title>
+    <link href="/styles/output.css" rel="stylesheet">
+</head>
+<body class="h-screen bg-gray-100">
+    <%- include('../partials/_navbar') %>
+    <div class="container px-4 py-8 mx-auto">
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-center md:text-4xl text-primary">Parish: <%= parish.name %></h1>
+            <p class="mt-2 text-center text-gray-600">Area: <%= parish.parentArea.name %>, Province: <%= parish.parentArea.province.name %></p>
+            <p class="mt-2 text-center text-gray-600">Manage Sunday classes and class teachers</p>
+        </header>
+
+        <div class="max-w-4xl p-6 mx-auto mb-8 bg-white rounded-lg shadow-lg">
+            <h2 class="pb-2 mb-6 text-2xl font-semibold border-b text-primary">Sunday Classes in this Parish</h2>
+            <div id="sundayClassList" class="mb-6">
+                
+                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    <% if (sundayClasses && sundayClasses.length > 0) { %>
+                        <% sundayClasses.forEach(cls => { %>
+                            <div class="overflow-hidden transition-transform duration-300 bg-white rounded-lg shadow-lg hover:transform hover:scale-105 class-card">
+                                <div class="px-4 py-3 text-white bg-primary">
+                                    <div class="flex items-center justify-between">
+                                        <h3 class="text-xl font-semibold"><%= cls.name %></h3>
+                                        <div class="flex items-center justify-center w-8 h-8 font-bold bg-white rounded-full text-primary">
+                                            <%= cls.studentCount ? cls.studentCount : "0" %>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="p-6">
+                                    <div class="mb-6">
+                                        <div class="flex items-center mb-2">
+                                            <svg class="w-5 h-5 mr-2 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                            </svg>
+                                            <span class="font-medium text-gray-700"><%= cls.studentCount ? cls.studentCount : "0" %> Students</span>
+                                        </div>
+                                        <% if (cls.description) { %>
+                                            <p class="h-8 overflow-hidden text-gray-600 uppercase"><%= cls.description %></p>
+                                        <% } else { %>
+                                            <p class="h-8 overflow-hidden italic text-gray-400">No description available</p>
+                                        <% } %>
+                                    </div>
+                                    <a href="/sunday-classes/<%= cls.id %>" class="block w-full px-4 py-2 font-bold text-center text-white transition-colors duration-200 rounded bg-secondary hover:bg-secondary-dark">
+                                        View Class
+                                    </a>
+                                </div>
+                            </div>
+                        <% }); %>
+                    <% } else { %>
+                        <div class="p-8 text-center bg-white rounded-lg shadow-lg col-span-full">
+                            <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <p class="text-lg text-gray-600">No classes found.</p>
+                            <p class="mt-2 text-gray-500">Contact an administrator to add classes.</p>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <button id="createSundayClassBtn" class="px-4 py-2 mx-auto my-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline">
+                    Create Sunday Class
+                </button>
+                <button id="addClassTeacherBtn" class="px-4 py-2 mx-auto my-2 font-bold text-white bg-green-500 rounded hover:bg-green-700 focus:outline-none focus:shadow-outline">
+                    Add Class Teacher
+                </button>
+                <button id="viewClassTeachersBtn" class="px-4 py-2 mx-auto my-2 font-bold text-white bg-purple-500 rounded hover:bg-purple-700 focus:outline-none focus:shadow-outline">
+                    View Class Teachers
+                </button>
+            </div>
+        </div>
+
+        <!-- Create Sunday Class Modal -->
+        <div id="createSundayClassModal" class="fixed inset-0 z-10 hidden overflow-y-auto" data-parish-id="<%= parish.id %>">
+            <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                    <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+                </div>
+
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full" role="dialog" aria-modal="true" aria-labelledby="modal-headline">
+                    <div class="px-4 pt-5 pb-4 bg-white sm:p-6 sm:pb-4">
+                        <h3 class="text-lg font-medium leading-6 text-gray-900" id="modal-headline">
+                            Create Sunday Class
+                        </h3>
+                        <form id="createSundayClassForm" class="mt-2">
+                            <div class="mb-4">
+                                <label class="block mb-2 text-sm font-bold text-gray-700" for="sundayClassName">
+                                    Sunday Class Name:
+                                </label>
+                                <input class="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline" id="sundayClassName" name="sundayClassName" type="text" placeholder="Sunday Class Name" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block mb-2 text-sm font-bold text-gray-700" for="sundayClassName">
+                                    Description:
+                                </label>
+                                <select class="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline" id="description" name="description" required>
+                                    <option value="">Select One</option>
+                                    <option value="conventional">CONVENTIONAL</option>
+                                    <option value="yaya">YAYA</option>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="px-4 py-3 bg-gray-50 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button id="createSundayClassSubmitBtn" type="button" class="inline-flex justify-center w-full px-4 py-2 text-base font-medium text-white bg-blue-500 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                            Create
+                        </button>
+                        <button id="closeCreateSundayClassModalBtn" type="button" class="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Class Teacher Modal -->
+        <div id="addClassTeacherModal" class="fixed inset-0 z-10 hidden overflow-y-auto" data-parish-id="<%= parish.id %>">
+            <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                    <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+                </div>
+
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full" role="dialog" aria-modal="true" aria-labelledby="modal-headline">
+                    <div class="px-4 pt-5 pb-4 bg-white sm:p-6 sm:pb-4">
+                        <h3 class="text-lg font-medium leading-6 text-gray-900" id="modal-headline">
+                            Add Class Teacher
+                        </h3>
+                        <form id="addClassTeacherForm" class="mt-2">
+                            <div class="mb-4">
+                                <label class="block mb-2 text-sm font-bold text-gray-700" for="classTeacherName">
+                                    Class Teacher Name:
+                                </label>
+                                <input class="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline" id="classTeacherName" name="classTeacherName" type="text" placeholder="Class Teacher Name" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block mb-2 text-sm font-bold text-gray-700" for="classTeacherUsername">
+                                    Class Teacher Email:
+                                </label>
+                                <input class="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline" id="classTeacherUsername" name="classTeacherUsername" type="email" placeholder="Class Teacher email" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block mb-2 text-sm font-bold text-gray-700" for="classTeacherPassword">
+                                    Class Teacher Password:
+                                </label>
+                                <input class="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline" id="classTeacherPassword" name="classTeacherPassword" type="password" placeholder="Class Teacher Password" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block mb-2 text-sm font-bold text-gray-700" for="classTeacherConfirmPassword">
+                                    Confirm Class Teacher Password:
+                                </label>
+                                <input class="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline" id="classTeacherConfirmPassword" name="classTeacherConfirmPassword" type="password" placeholder="Confirm Class Teacher Password" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block mb-2 text-sm font-bold text-gray-700" for="classTeacherSundayClass">
+                                    Sunday Class:
+                                </label>
+                                <select class="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline" id="classTeacherSundayClass" name="classTeacherSundayClass" required>
+                                    <option value="">Select Sunday Class</option>
+                                    <% sundayClasses.forEach(sundayClass => { %>
+                                        <option value="<%= sundayClass.id %>"><%= sundayClass.name %></option>
+                                    <% }); %>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="px-4 py-3 bg-gray-50 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button id="createClassTeacherBtn" type="button" class="inline-flex justify-center w-full px-4 py-2 text-base font-medium text-white bg-green-500 border border-transparent rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm">
+                            Create
+                        </button>
+                        <button id="closeAddClassTeacherModalBtn" type="button" class="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- View Class Teachers Modal -->
+        <div id="classTeachersModal" class="fixed inset-0 z-10 hidden overflow-y-auto">
+            <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                    <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+                </div>
+
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full" role="dialog" aria-modal="true" aria-labelledby="modal-headline">
+                    <div class="px-4 pt-5 pb-4 bg-white sm:p-6 sm:pb-4">
+                        <h3 class="text-lg font-medium leading-6 text-gray-900" id="modal-headline">
+                            Class Teachers
+                        </h3>
+                        <div class="mt-4">
+                            <div id="classTeachersList" class="overflow-y-auto max-h-96">
+                                <p class="text-center text-gray-500">Loading class teachers...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="px-4 py-3 bg-gray-50 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button id="closeClassTeachersModalBtn" type="button" class="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get the modals
+        const createSundayClassModal = document.getElementById("createSundayClassModal");
+        const addClassTeacherModal = document.getElementById("addClassTeacherModal");
+        const classTeachersModal = document.getElementById("classTeachersModal");
+
+        // Get the buttons that open the modals
+        const createSundayClassBtn = document.getElementById("createSundayClassBtn");
+        const addClassTeacherBtn = document.getElementById("addClassTeacherBtn");
+        const viewClassTeachersBtn = document.getElementById("viewClassTeachersBtn");
+
+        // Get the buttons that close the modals
+        const closeCreateSundayClassModalBtn = document.getElementById("closeCreateSundayClassModalBtn");
+        const closeAddClassTeacherModalBtn = document.getElementById("closeAddClassTeacherModalBtn");
+        const closeClassTeachersModalBtn = document.getElementById("closeClassTeachersModalBtn");
+
+        // When the user clicks the buttons, open the modals
+        createSundayClassBtn.onclick = function () {
+            createSundayClassModal.classList.remove('hidden');
+        }
+
+        addClassTeacherBtn.onclick = function () {
+            addClassTeacherModal.classList.remove('hidden');
+        }
+
+        viewClassTeachersBtn.onclick = async function () {
+            classTeachersModal.classList.remove('hidden');
+            await fetchClassTeachers();
+        }
+
+        // When the user clicks on the close buttons, close the modals
+        closeCreateSundayClassModalBtn.onclick = function () {
+            createSundayClassModal.classList.add('hidden');
+        }
+
+        closeAddClassTeacherModalBtn.onclick = function () {
+            addClassTeacherModal.classList.add('hidden');
+        }
+
+        closeClassTeachersModalBtn.onclick = function () {
+            classTeachersModal.classList.add('hidden');
+        }
+
+        // When the user clicks anywhere outside of the modals, close them
+        window.onclick = function (event) {
+            if (event.target == createSundayClassModal) {
+                createSundayClassModal.classList.add('hidden');
+            }
+            if (event.target == addClassTeacherModal) {
+                addClassTeacherModal.classList.add('hidden');
+            }
+            if (event.target == classTeachersModal) {
+                classTeachersModal.classList.add('hidden');
+            }
+        }
+
+        // Create Sunday Class
+        document.getElementById('createSundayClassSubmitBtn').addEventListener('click', async () => {
+            const sundayClassName = document.getElementById('sundayClassName').value;
+            const description = document.getElementById('description').value;
+            if (!sundayClassName) {
+                alert('Please enter the Sunday class name.');
+                return;
+            } else if (!description) {
+                alert('Please enter the Class description or type of manual used.');
+                return;
+            }
+
+            try {
+                const parishId = document.getElementById('createSundayClassModal').dataset.parishId;
+                const response = await fetch(`/parishes/${parishId}/sunday-classes/create`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: sundayClassName,
+                        parishId: parseInt(parishId),
+                        description
+                    })
+                });
+
+                if (response.ok) {
+                    alert('Sunday class created successfully!');
+                    document.getElementById('sundayClassName').value = ''; // Clear input
+                    document.getElementById('description').value = ''; // Clear input
+                    createSundayClassModal.classList.add('hidden'); // Close the modal
+                    window.location.reload(); // Refresh the page to show the new Sunday class
+                } else {
+                    const errorData = await response.json();
+                    alert(`Error: ${errorData.message || 'Failed to create Sunday class'}`);
+                }
+            } catch (error) {
+                console.error('Error creating Sunday class:', error);
+                alert('An error occurred while creating the Sunday class.');
+            }
+        });
+
+        // Create Class Teacher
+        document.getElementById('createClassTeacherBtn').addEventListener('click', async () => {
+            const classTeacherName = document.getElementById('classTeacherName').value;
+            const classTeacherUsername = document.getElementById('classTeacherUsername').value;
+            const classTeacherPassword = document.getElementById('classTeacherPassword').value;
+            const classTeacherConfirmPassword = document.getElementById('classTeacherConfirmPassword').value;
+            const classTeacherSundayClass = document.getElementById('classTeacherSundayClass').value;
+
+            if (!classTeacherName) {
+                alert('Please enter the class teacher name.');
+                return;
+            }
+
+            if (!classTeacherUsername) {
+                alert('Please enter the class teacher email.');
+                return;
+            }
+
+            if (!classTeacherPassword) {
+                alert('Please enter the class teacher password.');
+                return;
+            }
+
+            if (!classTeacherConfirmPassword) {
+                alert('Please confirm the class teacher password.');
+                return;
+            }
+
+            if (classTeacherPassword !== classTeacherConfirmPassword) {
+                alert('Passwords do not match!');
+                return;
+            }
+
+            if (!classTeacherSundayClass) {
+                alert('Please select a Sunday class.');
+                return;
+            }
+
+            try {
+                const parishId = document.getElementById('addClassTeacherModal').dataset.parishId;
+                const response = await fetch(`/parishes/${parishId}/class-teachers/create`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        classTeacherName,
+                        classTeacherUsername,
+                        classTeacherPassword,
+                        classTeacherConfirmPassword,
+                        classTeacherSundayClass
+                    })
+                });
+
+                if (response.ok) {
+                    alert('Class Teacher created successfully!');
+                    document.getElementById('addClassTeacherForm').reset();
+                    addClassTeacherModal.classList.add('hidden');
+                } else {
+                    const errorData = await response.json();
+                    alert(`Error: ${errorData.message || 'Failed to create class teacher'}`);
+                }
+            } catch (error) {
+                console.error('Error creating class teacher:', error);
+                alert('An error occurred while creating the class teacher.');
+            }
+        });
+
+        // Fetch Class Teachers
+        async function fetchClassTeachers() {
+            try {
+                const response = await fetch('/parishes/<%= parish.id %>/class-teachers', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const classTeachers = await response.json();
+                    const classTeachersList = document.getElementById('classTeachersList');
+
+                    if (classTeachers.length === 0) {
+                        classTeachersList.innerHTML = '<p class="text-center text-gray-500">No class teachers found.</p>';
+                        return;
+                    }
+
+                    classTeachersList.innerHTML = '';
+
+                    // Create table
+                    const table = document.createElement('table');
+                    table.className = 'min-w-full divide-y divide-gray-200';
+
+                    // Create table header
+                    const thead = document.createElement('thead');
+                    thead.className = 'bg-gray-50';
+
+                    const headerRow = document.createElement('tr');
+
+                    const nameHeader = document.createElement('th');
+                    nameHeader.className = 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
+                    nameHeader.textContent = 'Name';
+
+                    const emailHeader = document.createElement('th');
+                    emailHeader.className = 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
+                    emailHeader.textContent = 'Email';
+
+                    const sundayClassHeader = document.createElement('th');
+                    sundayClassHeader.className = 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
+                    sundayClassHeader.textContent = 'Sunday Class';
+
+                    const actionHeader = document.createElement('th');
+                    actionHeader.className = 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
+                    actionHeader.textContent = 'Action';
+
+                    headerRow.appendChild(nameHeader);
+                    headerRow.appendChild(emailHeader);
+                    headerRow.appendChild(sundayClassHeader);
+                    headerRow.appendChild(actionHeader);
+
+                    thead.appendChild(headerRow);
+                    table.appendChild(thead);
+
+                    // Create table body
+                    const tbody = document.createElement('tbody');
+                    tbody.className = 'bg-white divide-y divide-gray-200';
+
+                    classTeachers.forEach(teacher => {
+                        const row = document.createElement('tr');
+
+                        const nameCell = document.createElement('td');
+                        nameCell.className = 'px-6 py-4 whitespace-nowrap';
+                        nameCell.textContent = teacher.username;
+
+                        const emailCell = document.createElement('td');
+                        emailCell.className = 'px-6 py-4 whitespace-nowrap';
+                        emailCell.textContent = teacher.email;
+
+                        const sundayClassCell = document.createElement('td');
+                        sundayClassCell.className = 'px-6 py-4 whitespace-nowrap';
+                        sundayClassCell.textContent = teacher.sundayClass ? teacher.sundayClass.name : 'N/A';
+
+                        const actionCell = document.createElement('td');
+                        actionCell.className = 'px-6 py-4 whitespace-nowrap';
+
+                        const deleteButton = document.createElement('button');
+                        deleteButton.className = 'px-3 py-1 text-sm text-white bg-red-500 rounded hover:bg-red-700 focus:outline-none focus:shadow-outline';
+                        deleteButton.textContent = 'Delete';
+                        deleteButton.addEventListener('click', () => deleteClassTeacher(teacher.id));
+
+                        actionCell.appendChild(deleteButton);
+
+                        row.appendChild(nameCell);
+                        row.appendChild(emailCell);
+                        row.appendChild(sundayClassCell);
+                        row.appendChild(actionCell);
+
+                        tbody.appendChild(row);
+                    });
+
+                    table.appendChild(tbody);
+                    classTeachersList.appendChild(table);
+                } else {
+                    console.error('Failed to fetch class teachers');
+                    document.getElementById('classTeachersList').innerHTML = '<p class="text-center text-red-500">Failed to load class teachers.</p>';
+                }
+            } catch (error) {
+                console.error('Error fetching class teachers:', error);
+                document.getElementById('classTeachersList').innerHTML = '<p class="text-center text-red-500">Error loading class teachers.</p>';
+            }
+        }
+
+        // Delete Class Teacher
+        async function deleteClassTeacher(id) {
+            if (!confirm('Are you sure you want to delete this class teacher?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/parishes/class-teacher/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    alert('Class teacher deleted successfully!');
+                    await fetchClassTeachers(); // Refresh the list
+                } else {
+                    const errorData = await response.json();
+                    alert(`Error: ${errorData.message || 'Failed to delete class teacher'}`);
+                }
+            } catch (error) {
+                console.error('Error deleting class teacher:', error);
+                alert('An error occurred while deleting the class teacher.');
+            }
+        }
+    </script>
+</body>
+</html>

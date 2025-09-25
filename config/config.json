@@ -1,0 +1,23 @@
+{
+  "development": {
+    "username": "root",
+    "password": "",
+    "database": "attendance_system",
+    "host": "localhost",
+    "dialect": "mysql"
+  },
+  "test": {
+    "username": "root",
+    "password": "",
+    "database": "attendance_system_test",
+    "host": "localhost",
+    "dialect": "mysql"
+  },
+  "production": {
+    "username": "root",
+    "password": "",
+    "database": "attendance_system",
+    "host": "localhost",
+    "dialect": "mysql"
+  }
+}

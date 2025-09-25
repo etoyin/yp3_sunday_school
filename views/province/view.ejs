@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Province Details</title>
+    <link href="/styles/output.css" rel="stylesheet">
+</head>
+<body class="h-screen bg-gray-100">
+    <%- include('../partials/_navbar') %>
+    <div class="container px-4 py-8 mx-auto">
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-center md:text-4xl text-primary">Province: <%= province.name %></h1>
+            <p class="mt-2 text-center text-gray-600">Manage areas and area officers</p>
+        </header>
+        
+        <div class="max-w-4xl p-6 mx-auto mb-8 bg-white rounded-lg shadow-lg">
+            <div class="flex items-center justify-between mb-6 border-b ">
+                <h2 class="pb-2 text-2xl font-semibold text-primary">Areas in this Province</h2>
+                <input type="text" id="areaSearch" class="w-64 px-3 py-2 mb-4 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline" placeholder="Search Areas...">
+            </div>
+            <div id="areaList" class="mb-6">
+                <% if (areas && areas.length > 0) { %>
+                    <div class="overflow-hidden bg-white rounded-lg shadow">
+                        <table class="min-w-full divide-y divide-gray-200" id="areaTable">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">ID</th>
+                                    <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Name</th>
+                                    <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <% areas.forEach(area => { %>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap"><%= area.id %></td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <a href="/areas/<%= area.id %>" class="text-blue-600 hover:text-blue-900"><%= area.name %></a>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <a href="/areas/<%= area.id %>" class="px-3 py-1 text-sm text-white bg-blue-500 rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline">View Parishes</a>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } else { %>
+                    <p class="text-center text-gray-500">No areas found in this province.</p>
+                <% } %>
+            </div>
+            
+            <div class="text-center">
+                <button id="createAreaBtn" class="px-4 py-2 mx-auto my-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline">
+                    Create Area
+                </button>
+                <button id="addAreaOfficerBtn" class="px-4 py-2 mx-auto my-2 font-bold text-white bg-green-500 rounded hover:bg-green-700 focus:outline-none focus:shadow-outline">
+                    Add Area Officer
+                </button>
+                <button id="viewAreaOfficersBtn" class="px-4 py-2 mx-auto my-2 font-bold text-white bg-purple-500 rounded hover:bg-purple-700 focus:outline-none focus:shadow-outline">
+                    View Area Officers
+                </button>
+            </div>
+        </div>
+        
+        <!-- Create Area Modal -->
+        <div id="createAreaModal" class="fixed inset-0 z-10 hidden overflow-y-auto">
+            <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                    <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+                </div>
+
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full" role="dialog" aria-modal="true" aria-labelledby="modal-headline">
+                    <div class="px-4 pt-5 pb-4 bg-white sm:p-6 sm:pb-4">
+                        <h3 class="text-lg font-medium leading-6 text-gray-900" id="modal-headline">
+                            Create Area
+                        </h3>
+                        <form id="createAreaForm" class="mt-2">
+                            <div class="mb-4">
+                                <label class="block mb-2 text-sm font-bold text-gray-700" for="areaName">
+                                    Area Name:
+                                </label>
+                                <input class="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline" id="areaName" name="areaName" type="text" placeholder="Area Name" required>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="px-4 py-3 bg-gray-50 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button id="createAreaSubmitBtn" type="button" class="inline-flex justify-center w-full px-4 py-2 text-base font-medium text-white bg-blue-500 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                            Create
+                        </button>
+                        <button id="closeCreateAreaModalBtn" type="button" class="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Add Area Officer Modal -->
+        <div id="addAreaOfficerModal" class="fixed inset-0 z-10 hidden overflow-y-auto">
+            <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                    <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+                </div>
+
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full" role="dialog" aria-modal="true" aria-labelledby="modal-headline">
+                    <div class="px-4 pt-5 pb-4 bg-white sm:p-6 sm:pb-4">
+                        <h3 class="text-lg font-medium leading-6 text-gray-900" id="modal-headline">
+                            Add Area Officer
+                        </h3>
+                        <form id="addAreaOfficerForm" class="mt-2">
+                            <div class="mb-4">
+                                <label class="block mb-2 text-sm font-bold text-gray-700" for="areaOfficerName">
+                                    Area Officer Name:
+                                </label>
+                                <input class="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline" id="areaOfficerName" name="areaOfficerName" type="text" placeholder="Area Officer Name" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block mb-2 text-sm font-bold text-gray-700" for="areaOfficerUsername">
+                                    Area Officer Email:
+                                </label>
+                                <input class="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline" id="areaOfficerUsername" name="areaOfficerUsername" type="email" placeholder="Area Officer email" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block mb-2 text-sm font-bold text-gray-700" for="areaOfficerPassword">
+                                    Area Officer Password:
+                                </label>
+                                <input class="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline" id="areaOfficerPassword" name="areaOfficerPassword" type="password" placeholder="Area Officer Password" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block mb-2 text-sm font-bold text-gray-700" for="areaOfficerConfirmPassword">
+                                    Confirm Area Officer Password:
+                                </label>
+                                <input class="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline" id="areaOfficerConfirmPassword" name="areaOfficerConfirmPassword" type="password" placeholder="Confirm Area Officer Password" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block mb-2 text-sm font-bold text-gray-700" for="areaOfficerArea">
+                                    Area:
+                                </label>
+                                <select class="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline" id="areaOfficerArea" name="areaOfficerArea" required>
+                                    <option value="">Select Area</option>
+                                    <% areas.forEach(area => { %>
+                                        <option value="<%= area.id %>"><%= area.name %></option>
+                                    <% }); %>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="px-4 py-3 bg-gray-50 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button id="createAreaOfficerBtn" type="button" class="inline-flex justify-center w-full px-4 py-2 text-base font-medium text-white bg-green-500 border border-transparent rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm">
+                            Create
+                        </button>
+                        <button id="closeAddAreaOfficerModalBtn" type="button" class="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- View Area Officers Modal -->
+        <div id="areaOfficersModal" class="fixed inset-0 z-10 hidden overflow-y-auto">
+            <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                    <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+                </div>
+
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full" role="dialog" aria-modal="true" aria-labelledby="modal-headline">
+                    <div class="px-4 pt-5 pb-4 bg-white sm:p-6 sm:pb-4">
+                        <h3 class="text-lg font-medium leading-6 text-gray-900" id="modal-headline">
+                            Area Officers
+                        </h3>
+                        <div class="mt-4">
+                            <div id="areaOfficersList" class="overflow-y-auto max-h-96">
+                                <p class="text-center text-gray-500">Loading area officers...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="px-4 py-3 bg-gray-50 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button id="closeAreaOfficersModalBtn" type="button" class="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get the modals
+        const createAreaModal = document.getElementById("createAreaModal");
+        const addAreaOfficerModal = document.getElementById("addAreaOfficerModal");
+        const areaOfficersModal = document.getElementById("areaOfficersModal");
+        
+        // Get the buttons that open the modals
+        const createAreaBtn = document.getElementById("createAreaBtn");
+        const addAreaOfficerBtn = document.getElementById("addAreaOfficerBtn");
+        const viewAreaOfficersBtn = document.getElementById("viewAreaOfficersBtn");
+        
+        // Get the buttons that close the modals
+        const closeCreateAreaModalBtn = document.getElementById("closeCreateAreaModalBtn");
+        const closeAddAreaOfficerModalBtn = document.getElementById("closeAddAreaOfficerModalBtn");
+        const closeAreaOfficersModalBtn = document.getElementById("closeAreaOfficersModalBtn");
+        
+        // When the user clicks the buttons, open the modals
+        createAreaBtn.onclick = function() {
+            createAreaModal.classList.remove('hidden');
+        }
+        
+        addAreaOfficerBtn.onclick = function() {
+            addAreaOfficerModal.classList.remove('hidden');
+        }
+        
+        viewAreaOfficersBtn.onclick = async function() {
+            areaOfficersModal.classList.remove('hidden');
+            await fetchAreaOfficers();
+        }
+        
+        // When the user clicks on the close buttons, close the modals
+        closeCreateAreaModalBtn.onclick = function() {
+            createAreaModal.classList.add('hidden');
+        }
+        
+        closeAddAreaOfficerModalBtn.onclick = function() {
+            addAreaOfficerModal.classList.add('hidden');
+        }
+        
+        closeAreaOfficersModalBtn.onclick = function() {
+            areaOfficersModal.classList.add('hidden');
+        }
+        
+        // When the user clicks anywhere outside of the modals, close them
+        window.onclick = function(event) {
+            if (event.target == createAreaModal) {
+                createAreaModal.classList.add('hidden');
+            }
+            if (event.target == addAreaOfficerModal) {
+                addAreaOfficerModal.classList.add('hidden');
+            }
+            if (event.target == areaOfficersModal) {
+                areaOfficersModal.classList.add('hidden');
+            }
+        }
+        
+        // Create Area
+        document.getElementById('createAreaSubmitBtn').addEventListener('click', async () => {
+            const areaName = document.getElementById('areaName').value;
+            
+            if (!areaName) {
+                alert('Please enter the area name.');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/provinces/<%= province.id %>/areas/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        name: areaName,
+                        provinceId: parseInt('<%= province.id %>')
+                    })
+                });
+                
+                if (response.ok) {
+                    alert('Area created successfully!');
+                    document.getElementById('areaName').value = ''; // Clear input
+                    createAreaModal.classList.add('hidden'); // Close the modal
+                    window.location.reload(); // Refresh the page to show the new area
+                } else {
+                    const errorData = await response.json();
+                    alert(`Error: ${errorData.message || 'Failed to create area'}`);
+                }
+            } catch (error) {
+                console.error('Error creating area:', error);
+                alert('An error occurred while creating the area.');
+            }
+        });
+        
+        // Create Area Officer
+        document.getElementById('createAreaOfficerBtn').addEventListener('click', async () => {
+            const areaOfficerName = document.getElementById('areaOfficerName').value;
+            const areaOfficerUsername = document.getElementById('areaOfficerUsername').value;
+            const areaOfficerPassword = document.getElementById('areaOfficerPassword').value;
+            const areaOfficerConfirmPassword = document.getElementById('areaOfficerConfirmPassword').value;
+            const areaOfficerArea = document.getElementById('areaOfficerArea').value;
+            
+            if (!areaOfficerName) {
+                alert('Please enter the area officer name.');
+                return;
+            }
+            
+            if (!areaOfficerUsername) {
+                alert('Please enter the area officer email.');
+                return;
+            }
+            
+            if (!areaOfficerPassword) {
+                alert('Please enter the area officer password.');
+                return;
+            }
+            
+            if (!areaOfficerConfirmPassword) {
+                alert('Please confirm the area officer password.');
+                return;
+            }
+            
+            if (areaOfficerPassword !== areaOfficerConfirmPassword) {
+                alert('Passwords do not match!');
+                return;
+            }
+            
+            if (!areaOfficerArea) {
+                alert('Please select an area.');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/provinces/<%= province.id %>/area-officers/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        areaOfficerName,
+                        areaOfficerUsername,
+                        areaOfficerPassword,
+                        areaOfficerConfirmPassword,
+                        areaOfficerArea
+                    })
+                });
+                
+                if (response.ok) {
+                    alert('Area Officer created successfully!');
+                    document.getElementById('addAreaOfficerForm').reset();
+                    addAreaOfficerModal.classList.add('hidden');
+                } else {
+                    const errorData = await response.json();
+                    alert(`Error: ${errorData.message || 'Failed to create area officer'}`);
+                }
+            } catch (error) {
+                console.error('Error creating area officer:', error);
+                alert('An error occurred while creating the area officer.');
+            }
+        });
+        
+        // Fetch Area Officers
+        async function fetchAreaOfficers() {
+            try {
+                const response = await fetch('/provinces/<%= province.id %>/area-officers', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const areaOfficers = await response.json();
+                    const areaOfficersList = document.getElementById('areaOfficersList');
+                    
+                    if (areaOfficers.length === 0) {
+                        areaOfficersList.innerHTML = '<p class="text-center text-gray-500">No area officers found.</p>';
+                        return;
+                    }
+                    
+                    areaOfficersList.innerHTML = '';
+                    
+                    // Create table
+                    const table = document.createElement('table');
+                    table.className = 'min-w-full divide-y divide-gray-200';
+                    
+                    // Create table header
+                    const thead = document.createElement('thead');
+                    thead.className = 'bg-gray-50';
+                    
+                    const headerRow = document.createElement('tr');
+                    
+                    const nameHeader = document.createElement('th');
+                    nameHeader.className = 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
+                    nameHeader.textContent = 'Name';
+                    
+                    const emailHeader = document.createElement('th');
+                    emailHeader.className = 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
+                    emailHeader.textContent = 'Email';
+                    
+                    const areaHeader = document.createElement('th');
+                    areaHeader.className = 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
+                    areaHeader.textContent = 'Area';
+                    
+                    const actionHeader = document.createElement('th');
+                    actionHeader.className = 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
+                    actionHeader.textContent = 'Action';
+                    
+                    headerRow.appendChild(nameHeader);
+                    headerRow.appendChild(emailHeader);
+                    headerRow.appendChild(areaHeader);
+                    headerRow.appendChild(actionHeader);
+                    
+                    thead.appendChild(headerRow);
+                    table.appendChild(thead);
+                    
+                    // Create table body
+                    const tbody = document.createElement('tbody');
+                    tbody.className = 'bg-white divide-y divide-gray-200';
+                    
+                    areaOfficers.forEach(officer => {
+                        const row = document.createElement('tr');
+                        
+                        const nameCell = document.createElement('td');
+                        nameCell.className = 'px-6 py-4 whitespace-nowrap';
+                        nameCell.textContent = officer.username;
+                        
+                        const emailCell = document.createElement('td');
+                        emailCell.className = 'px-6 py-4 whitespace-nowrap';
+                        emailCell.textContent = officer.email;
+                        
+                        const areaCell = document.createElement('td');
+                        areaCell.className = 'px-6 py-4 whitespace-nowrap';
+                        areaCell.textContent = officer.userArea ? officer.userArea.name : 'N/A';
+                        
+                        const actionCell = document.createElement('td');
+                        actionCell.className = 'px-6 py-4 whitespace-nowrap';
+                        
+                        const deleteButton = document.createElement('button');
+                        deleteButton.className = 'px-3 py-1 text-sm text-white bg-red-500 rounded hover:bg-red-700 focus:outline-none focus:shadow-outline';
+                        deleteButton.textContent = 'Delete';
+                        deleteButton.addEventListener('click', () => deleteAreaOfficer(officer.id));
+                        
+                        actionCell.appendChild(deleteButton);
+                        
+                        row.appendChild(nameCell);
+                        row.appendChild(emailCell);
+                        row.appendChild(areaCell);
+                        row.appendChild(actionCell);
+                        
+                        tbody.appendChild(row);
+                    });
+                    
+                    table.appendChild(tbody);
+                    areaOfficersList.appendChild(table);
+                } else {
+                    console.error('Failed to fetch area officers');
+                    document.getElementById('areaOfficersList').innerHTML = '<p class="text-center text-red-500">Failed to load area officers.</p>';
+                }
+            } catch (error) {
+                console.error('Error fetching area officers:', error);
+                document.getElementById('areaOfficersList').innerHTML = '<p class="text-center text-red-500">Error loading area officers.</p>';
+            }
+        }
+        
+        // Delete Area Officer
+        async function deleteAreaOfficer(id) {
+            if (!confirm('Are you sure you want to delete this area officer?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/provinces/area-officer/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    alert('Area officer deleted successfully!');
+                    await fetchAreaOfficers(); // Refresh the list
+                } else {
+                    const errorData = await response.json();
+                    alert(`Error: ${errorData.message || 'Failed to delete area officer'}`);
+                }
+            } catch (error) {
+                console.error('Error deleting area officer:', error);
+                alert('An error occurred while deleting the area officer.');
+            }
+        }
+
+        const areaSearch = document.getElementById('areaSearch');
+        const areaTable = document.getElementById('areaTable');
+        
+        areaSearch.addEventListener('keyup', function(event) {
+            const searchQuery = event.target.value.toLowerCase();
+            const tableRows = areaTable.getElementsByTagName('tr');
+            
+            for (let i = 1; i < tableRows.length; i++) {
+                const row = tableRows[i];
+                const areaName = row.getElementsByTagName('td')[1].textContent.toLowerCase();
+                
+                if (areaName.includes(searchQuery)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

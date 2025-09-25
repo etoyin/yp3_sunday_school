@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Area Officer Dashboard</title>
+    <link href="/styles/output.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <div class="w-64 p-6 text-white bg-blue-800">
+            <h2 class="mb-6 text-2xl font-semibold">Admin Panel</h2>
+            <nav>
+                <ul>
+                    <li class="mb-4">
+                        <a href="/area/dashboard" class="block px-4 py-2 bg-blue-900 rounded">Dashboard</a>
+                    </li>
+                    <li class="mb-4">
+                        <a href="/area/parishes" class="block px-4 py-2 rounded hover:bg-blue-700">Manage Parishes</a>
+                    </li>
+                    <li class="mb-4">
+                        <a href="/auth/logout" class="block px-4 py-2 rounded hover:bg-blue-700">Logout</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 p-10">
+            <h1 class="mb-6 text-3xl font-bold">Area Officer Dashboard</h1>
+            
+            <div class="mb-8">
+                <h2 class="mb-4 text-xl font-semibold">Parishes in Your Area</h2>
+                
+                <div class="overflow-hidden bg-white rounded-lg shadow">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">ID</th>
+                                <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Name</th>
+                                <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Number of Sunday Classes</th>
+                                <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <% if (parishes && parishes.length > 0) { %>
+                                <% parishes.forEach(parish => { %>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap"><%= parish.id %></td>
+                                        <td class="px-6 py-4 whitespace-nowrap"><%= parish.name %></td>
+                                        <td class="px-6 py-4 whitespace-nowrap"><%= parish.sundayClasses ? parish.sundayClasses.length : 0 %></td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <a href="/area/parishes/<%= parish.id %>" class="mr-3 text-blue-600 hover:text-blue-900">View</a>
+                                            <a href="/area/parishes/<%= parish.id %>/edit" class="mr-3 text-yellow-600 hover:text-yellow-900">Edit</a>
+                                            <a href="/area/parishes/<%= parish.id %>/delete" class="text-red-600 hover:text-red-900">Delete</a>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="4" class="px-6 py-4 text-center">No parishes found</td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="mt-6">
+                <h2 class="mb-4 text-xl font-semibold">Add New Parish</h2>
+                <form action="/area/parishes/add" method="POST" class="p-6 bg-white rounded-lg shadow">
+                    <div class="mb-4">
+                        <label for="name" class="block mb-2 text-sm font-bold text-gray-700">Parish Name</label>
+                        <input type="text" id="name" name="name" class="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline" required>
+                    </div>
+                    <button type="submit" class="px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline">
+                        Add Parish
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

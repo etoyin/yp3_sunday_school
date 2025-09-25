@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Superuser</title>
+    <link href="/styles/output.css" rel="stylesheet">
+</head>
+<body class="flex items-center justify-center h-screen bg-gray-100">
+    <div class="p-8 mx-auto">
+        <h1 class="mb-4 text-2xl font-bold">Create Superuser</h1>
+        <form id="createSuperuserForm" class="max-w-sm px-8 pt-6 pb-8 mx-auto mb-4 bg-white rounded shadow-md">
+            <div class="mb-4">
+                <label class="block mb-2 text-sm font-bold text-gray-700" for="username">
+                    Username:
+                </label>
+                <input class="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline" id="username" name="username" type="text" placeholder="Username" required>
+            </div>
+            <div class="mb-6">
+                <label class="block mb-2 text-sm font-bold text-gray-700" for="password">
+                    Password:
+                </label>
+                <input class="w-full px-3 py-2 mb-3 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline" id="password" name="password" type="password" placeholder="Password" required>
+            </div>
+            <div class="flex items-center justify-between">
+                <button class="px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline" type="button" id="submitBtn">
+                    Create Superuser
+                </button>
+                <a class="inline-block text-sm font-bold text-blue-500 align-baseline hover:text-blue-800" href="/">
+                    Back to Home
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('submitBtn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('/auth/create-superuser', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (response.ok) {
+                    alert('Superuser created successfully!');
+                    window.location.href = '/auth/login'; // Redirect to home page
+                } else {
+                    const errorData = await response.json();
+                    alert(`Error: ${errorData.message || 'Failed to create superuser'}`);
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                alert('An error occurred while creating the superuser.');
+            }
+        });
+    </script>
+</body>
+</html>

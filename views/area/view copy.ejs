@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Area Details</title>
+    <link href="/styles/output.css" rel="stylesheet">
+</head>
+<body class="h-screen bg-gray-100">
+    <%- include('../partials/_navbar') %>
+    <div class="container px-4 py-8 mx-auto">
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-center md:text-4xl text-[#303489]">Area: <%= area.name %></h1>
+            <p class="mt-2 text-center text-gray-600">Province: <%= area.province.name %></p>
+            <p class="mt-2 text-center text-gray-600">Manage parishes and parish officers</p>
+        </header>
+        
+        <div class="max-w-4xl p-6 mx-auto mb-8 bg-white rounded-lg shadow-lg">
+            <h2 class="pb-2 mb-6 text-2xl font-semibold border-b text-[#303489]">Parishes in this Area</h2>
+            <div id="parishList" class="mb-6">
+                <% if (parishes && parishes.length > 0) { %>
+                    <div class="overflow-hidden bg-white rounded-lg shadow">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">ID</th>
+                                    <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Name</th>
+                                    <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <% parishes.forEach(parish => { %>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap"><%= parish.id %></td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <a href="/parishes/<%= parish.id %>" class="text-blue-600 hover:text-blue-900"><%= parish.name %></a>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <a href="/parishes/<%= parish.id %>" class="px-3 py-1 text-sm text-white bg-blue-500 rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline">View</a>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } else { %>
+                    <p class="text-center text-gray-500">No parishes found in this area.</p>
+                <% } %>
+            </div>
+            
+            <div class="text-center">
+                <button id="createParishBtn" class="px-4 py-2 mx-auto my-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline">
+                    Create Parish
+                </button>
+                <button id="addParishOfficerBtn" class="px-4 py-2 mx-auto my-2 font-bold text-white bg-green-500 rounded hover:bg-green-700 focus:outline-none focus:shadow-outline">
+                    Add Parish Officer
+                </button>
+                <button id="viewParishOfficersBtn" class="px-4 py-2 mx-auto my-2 font-bold text-white bg-purple-500 rounded hover:bg-purple-700 focus:outline-none focus:shadow-outline">
+                    View Parish Officers
+                </button>
+            </div>
+        </div>
+        
+        <!-- Create Parish Modal -->
+            <div id="createParishModal" class="fixed inset-0 z-10 hidden overflow-y-auto" data-area-id="<%= area.id %>">
+            <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                    <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+                </div>
+
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full" role="dialog" aria-modal="true" aria-labelledby="modal-headline">
+                    <div class="px-4 pt-5 pb-4 bg-white sm:p-6 sm:pb-4">
+                        <h3 class="text-lg font-medium leading-6 text-gray-900" id="modal-headline">
+                            Create Parish
+                        </h3>
+                        <form id="createParishForm" class="mt-2">
+                            <div class="mb-4">
+                                <label class="block mb-2 text-sm font-bold text-gray-700" for="parishName">
+                                    Parish Name:
+                                </label>
+                                <input class="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline" id="parishName" name="parishName" type="text" placeholder="Parish Name" required>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="px-4 py-3 bg-gray-50 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button id="createParishSubmitBtn" type="button" class="inline-flex justify-center w-full px-4 py-2 text-base font-medium text-white bg-blue-500 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                            Create
+                        </button>
+                        <button id="closeCreateParishModalBtn" type="button" class="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Add Parish Officer Modal -->
+        <div id="addParishOfficerModal" class="fixed inset-0 z-10 hidden overflow-y-auto" data-area-id="<%= area.id %>">
+            <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                    <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+                </div>
+
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full" role="dialog" aria-modal="true" aria-labelledby="modal-headline">
+                    <div class="px-4 pt-5 pb-4 bg-white sm:p-6 sm:pb-4">
+                        <h3 class="text-lg font-medium leading-6 text-gray-900" id="modal-headline">
+                            Add Parish Officer
+                        </h3>
+                        <form id="addParishOfficerForm" class="mt-2">
+                            <div class="mb-4">
+                                <label class="block mb-2 text-sm font-bold text-gray-700" for="parishOfficerName">
+                                    Parish Officer Name:
+                                </label>
+                                <input class="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline" id="parishOfficerName" name="parishOfficerName" type="text" placeholder="Parish Officer Name" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block mb-2 text-sm font-bold text-gray-700" for="parishOfficerUsername">
+                                    Parish Officer Email:
+                                </label>
+                                <input class="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline" id="parishOfficerUsername" name="parishOfficerUsername" type="email" placeholder="Parish Officer email" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block mb-2 text-sm font-bold text-gray-700" for="parishOfficerPassword">
+                                    Parish Officer Password:
+                                </label>
+                                <input class="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline" id="parishOfficerPassword" name="parishOfficerPassword" type="password" placeholder="Parish Officer Password" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block mb-2 text-sm font-bold text-gray-700" for="parishOfficerConfirmPassword">
+                                    Confirm Parish Officer Password:
+                                </label>
+                                <input class="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline" id="parishOfficerConfirmPassword" name="parishOfficerConfirmPassword" type="password" placeholder="Confirm Parish Officer Password" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block mb-2 text-sm font-bold text-gray-700" for="parishOfficerParish">
+                                    Parish:
+                                </label>
+                                <select class="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline" id="parishOfficerParish" name="parishOfficerParish" required>
+                                    <option value="">Select Parish</option>
+                                    <% parishes.forEach(parish => { %>
+                                        <option value="<%= parish.id %>"><%= parish.name %></option>
+                                    <% }); %>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="px-4 py-3 bg-gray-50 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button id="createParishOfficerBtn" type="button" class="inline-flex justify-center w-full px-4 py-2 text-base font-medium text-white bg-green-500 border border-transparent rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm">
+                            Create
+                        </button>
+                        <button id="closeAddParishOfficerModalBtn" type="button" class="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- View Parish Officers Modal -->
+        <div id="parishOfficersModal" class="fixed inset-0 z-10 hidden overflow-y-auto">
+            <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                    <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+                </div>
+
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full" role="dialog" aria-modal="true" aria-labelledby="modal-headline">
+                    <div class="px-4 pt-5 pb-4 bg-white sm:p-6 sm:pb-4">
+                        <h3 class="text-lg font-medium leading-6 text-gray-900" id="modal-headline">
+                            Parish Officers
+                        </h3>
+                        <div class="mt-4">
+                            <div id="parishOfficersList" class="overflow-y-auto max-h-96">
+                                <p class="text-center text-gray-500">Loading parish officers...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="px-4 py-3 bg-gray-50 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button id="closeParishOfficersModalBtn" type="button" class="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get the modals
+        const createParishModal = document.getElementById("createParishModal");
+        const addParishOfficerModal = document.getElementById("addParishOfficerModal");
+        const parishOfficersModal = document.getElementById("parishOfficersModal");
+        
+        // Get the buttons that open the modals
+        const createParishBtn = document.getElementById("createParishBtn");
+        const addParishOfficerBtn = document.getElementById("addParishOfficerBtn");
+        const viewParishOfficersBtn = document.getElementById("viewParishOfficersBtn");
+        
+        // Get the buttons that close the modals
+        const closeCreateParishModalBtn = document.getElementById("closeCreateParishModalBtn");
+        const closeAddParishOfficerModalBtn = document.getElementById("closeAddParishOfficerModalBtn");
+        const closeParishOfficersModalBtn = document.getElementById("closeParishOfficersModalBtn");
+        
+        // When the user clicks the buttons, open the modals
+        createParishBtn.onclick = function() {
+            createParishModal.classList.remove('hidden');
+        }
+        
+        addParishOfficerBtn.onclick = function() {
+            addParishOfficerModal.classList.remove('hidden');
+        }
+        
+        viewParishOfficersBtn.onclick = async function() {
+            parishOfficersModal.classList.remove('hidden');
+            await fetchParishOfficers();
+        }
+        
+        // When the user clicks on the close buttons, close the modals
+        closeCreateParishModalBtn.onclick = function() {
+            createParishModal.classList.add('hidden');
+        }
+        
+        closeAddParishOfficerModalBtn.onclick = function() {
+            addParishOfficerModal.classList.add('hidden');
+        }
+        
+        closeParishOfficersModalBtn.onclick = function() {
+            parishOfficersModal.classList.add('hidden');
+        }
+        
+        // When the user clicks anywhere outside of the modals, close them
+        window.onclick = function(event) {
+            if (event.target == createParishModal) {
+                createParishModal.classList.add('hidden');
+            }
+            if (event.target == addParishOfficerModal) {
+                addParishOfficerModal.classList.add('hidden');
+            }
+            if (event.target == parishOfficersModal) {
+                parishOfficersModal.classList.add('hidden');
+            }
+        }
+        
+        // Create Parish
+        document.getElementById('createParishSubmitBtn').addEventListener('click', async () => {
+            const parishName = document.getElementById('parishName').value;
+            
+            if (!parishName) {
+                alert('Please enter the parish name.');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/areas/<%= area.id %>/parishes/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        name: parishName,
+                        areaId: parseInt('<%= area.id %>')
+                    })
+                });
+                
+                if (response.ok) {
+                    alert('Parish created successfully!');
+                    document.getElementById('parishName').value = ''; // Clear input
+                    createParishModal.classList.add('hidden'); // Close the modal
+                    window.location.reload(); // Refresh the page to show the new parish
+                } else {
+                    const errorData = await response.json();
+                    alert(`Error: ${errorData.message || 'Failed to create parish'}`);
+                }
+            } catch (error) {
+                console.error('Error creating parish:', error);
+                alert('An error occurred while creating the parish.');
+            }
+        });
+        
+        // Create Parish Officer
+        document.getElementById('createParishOfficerBtn').addEventListener('click', async () => {
+            const parishOfficerName = document.getElementById('parishOfficerName').value;
+            const parishOfficerUsername = document.getElementById('parishOfficerUsername').value;
+            const parishOfficerPassword = document.getElementById('parishOfficerPassword').value;
+            const parishOfficerConfirmPassword = document.getElementById('parishOfficerConfirmPassword').value;
+            const parishOfficerParish = document.getElementById('parishOfficerParish').value;
+            
+            if (!parishOfficerName) {
+                alert('Please enter the parish officer name.');
+                return;
+            }
+            
+            if (!parishOfficerUsername) {
+                alert('Please enter the parish officer email.');
+                return;
+            }
+            
+            if (!parishOfficerPassword) {
+                alert('Please enter the parish officer password.');
+                return;
+            }
+            
+            if (!parishOfficerConfirmPassword) {
+                alert('Please confirm the parish officer password.');
+                return;
+            }
+            
+            if (parishOfficerPassword !== parishOfficerConfirmPassword) {
+                alert('Passwords do not match!');
+                return;
+            }
+            
+            if (!parishOfficerParish) {
+                alert('Please select a parish.');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/areas/<%= area.id %>/parish-officers/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        parishOfficerName,
+                        parishOfficerUsername,
+                        parishOfficerPassword,
+                        parishOfficerConfirmPassword,
+                        parishOfficerParish
+                    })
+                });
+                
+                if (response.ok) {
+                    alert('Parish Officer created successfully!');
+                    document.getElementById('addParishOfficerForm').reset();
+                    addParishOfficerModal.classList.add('hidden');
+                } else {
+                    const errorData = await response.json();
+                    alert(`Error: ${errorData.message || 'Failed to create parish officer'}`);
+                }
+            } catch (error) {
+                console.error('Error creating parish officer:', error);
+                alert('An error occurred while creating the parish officer.');
+            }
+        });
+        
+        // Fetch Parish Officers
+        async function fetchParishOfficers() {
+            try {
+                const response = await fetch('/areas/<%= area.id %>/parish-officers', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const parishOfficers = await response.json();
+                    const parishOfficersList = document.getElementById('parishOfficersList');
+                    
+                    if (parishOfficers.length === 0) {
+                        parishOfficersList.innerHTML = '<p class="text-center text-gray-500">No parish officers found.</p>';
+                        return;
+                    }
+                    
+                    parishOfficersList.innerHTML = '';
+                    
+                    // Create table
+                    const table = document.createElement('table');
+                    table.className = 'min-w-full divide-y divide-gray-200';
+                    
+                    // Create table header
+                    const thead = document.createElement('thead');
+                    thead.className = 'bg-gray-50';
+                    
+                    const headerRow = document.createElement('tr');
+                    
+                    const nameHeader = document.createElement('th');
+                    nameHeader.className = 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
+                    nameHeader.textContent = 'Name';
+                    
+                    const emailHeader = document.createElement('th');
+                    emailHeader.className = 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
+                    emailHeader.textContent = 'Email';
+                    
+                    const parishHeader = document.createElement('th');
+                    parishHeader.className = 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
+                    parishHeader.textContent = 'Parish';
+                    
+                    const actionHeader = document.createElement('th');
+                    actionHeader.className = 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
+                    actionHeader.textContent = 'Action';
+                    
+                    headerRow.appendChild(nameHeader);
+                    headerRow.appendChild(emailHeader);
+                    headerRow.appendChild(parishHeader);
+                    headerRow.appendChild(actionHeader);
+                    
+                    thead.appendChild(headerRow);
+                    table.appendChild(thead);
+                    
+                    // Create table body
+                    const tbody = document.createElement('tbody');
+                    tbody.className = 'bg-white divide-y divide-gray-200';
+                    
+                    parishOfficers.forEach(officer => {
+                        const row = document.createElement('tr');
+                        
+                        const nameCell = document.createElement('td');
+                        nameCell.className = 'px-6 py-4 whitespace-nowrap';
+                        nameCell.textContent = officer.username;
+                        
+                        const emailCell = document.createElement('td');
+                        emailCell.className = 'px-6 py-4 whitespace-nowrap';
+                        emailCell.textContent = officer.email;
+                        
+                        const parishCell = document.createElement('td');
+                        parishCell.className = 'px-6 py-4 whitespace-nowrap';
+                        parishCell.textContent = officer.parish ? officer.parish.name : 'N/A';
+                        
+                        const actionCell = document.createElement('td');
+                        actionCell.className = 'px-6 py-4 whitespace-nowrap';
+                        
+                        const deleteButton = document.createElement('button');
+                        deleteButton.className = 'px-3 py-1 text-sm text-white bg-red-500 rounded hover:bg-red-700 focus:outline-none focus:shadow-outline';
+                        deleteButton.textContent = 'Delete';
+                        deleteButton.addEventListener('click', () => deleteParishOfficer(officer.id));
+                        
+                        actionCell.appendChild(deleteButton);
+                        
+                        row.appendChild(nameCell);
+                        row.appendChild(emailCell);
+                        row.appendChild(parishCell);
+                        row.appendChild(actionCell);
+                        
+                        tbody.appendChild(row);
+                    });
+                    
+                    table.appendChild(tbody);
+                    parishOfficersList.appendChild(table);
+                } else {
+                    console.error('Failed to fetch parish officers');
+                    document.getElementById('parishOfficersList').innerHTML = '<p class="text-center text-red-500">Failed to load parish officers.</p>';
+                }
+            } catch (error) {
+                console.error('Error fetching parish officers:', error);
+                document.getElementById('parishOfficersList').innerHTML = '<p class="text-center text-red-500">Error loading parish officers.</p>';
+            }
+        }
+        
+        // Delete Parish Officer
+        async function deleteParishOfficer(id) {
+            if (!confirm('Are you sure you want to delete this parish officer?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/areas/parish-officer/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    alert('Parish officer deleted successfully!');
+                    await fetchParishOfficers(); // Refresh the list
+                } else {
+                    const errorData = await response.json();
+                    alert(`Error: ${errorData.message || 'Failed to delete parish officer'}`);
+                }
+            } catch (error) {
+                console.error('Error deleting parish officer:', error);
+                alert('An error occurred while deleting the parish officer.');
+            }
+        }
+
+        // Create Parish
+        document.getElementById('createParishSubmitBtn').addEventListener('click', async () => {
+            const parishName = document.getElementById('parishName').value;
+
+            if (!parishName) {
+                alert('Please enter the parish name.');
+                return;
+            }
+
+            try {
+                const areaId = document.getElementById('createParishModal').dataset.areaId;
+                const response = await fetch(`/areas/${areaId}/parishes/create`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: parishName,
+                        areaId: parseInt(areaId)
+                    })
+                });
+
+                if (response.ok) {
+                    alert('Parish created successfully!');
+                    document.getElementById('parishName').value = ''; // Clear input
+                    createParishModal.classList.add('hidden'); // Close the modal
+                    window.location.reload(); // Refresh the page to show the new parish
+                } else {
+                    const errorData = await response.json();
+                    alert(`Error: ${errorData.message || 'Failed to create parish'}`);
+                }
+            } catch (error) {
+                console.error('Error creating parish:', error);
+                alert('An error occurred while creating the parish.');
+            }
+        });
+
+        // Create Parish Officer
+        document.getElementById('createParishOfficerBtn').addEventListener('click', async () => {
+            const parishOfficerName = document.getElementById('parishOfficerName').value;
+            const parishOfficerUsername = document.getElementById('parishOfficerUsername').value;
+            const parishOfficerPassword = document.getElementById('parishOfficerPassword').value;
+            const parishOfficerConfirmPassword = document.getElementById('parishOfficerConfirmPassword').value;
+            const parishOfficerParish = document.getElementById('parishOfficerParish').value;
+
+            if (!parishOfficerName) {
+                alert('Please enter the parish officer name.');
+                return;
+            }
+
+            if (!parishOfficerUsername) {
+                alert('Please enter the parish officer email.');
+                return;
+            }
+
+            if (!parishOfficerPassword) {
+                alert('Please enter the parish officer password.');
+                return;
+            }
+
+            if (!parishOfficerConfirmPassword) {
+                alert('Please confirm the parish officer password.');
+                return;
+            }
+
+            if (parishOfficerPassword !== parishOfficerConfirmPassword) {
+                alert('Passwords do not match!');
+                return;
+            }
+
+            if (!parishOfficerParish) {
+                alert('Please select a parish.');
+                return;
+            }
+
+            try {
+                const areaId = document.getElementById('addParishOfficerModal').dataset.areaId;
+                const response = await fetch(`/areas/${areaId}/parish-officers/create`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        parishOfficerName,
+                        parishOfficerUsername,
+                        parishOfficerPassword,
+                        parishOfficerConfirmPassword,
+                        parishOfficerParish
+                    })
+                });
+
+                if (response.ok) {
+                    alert('Parish Officer created successfully!');
+                    document.getElementById('addParishOfficerForm').reset();
+                    addParishOfficerModal.classList.add('hidden');
+                } else {
+                    const errorData = await response.json();
+                    alert(`Error: ${errorData.message || 'Failed to create parish officer'}`);
+                }
+            } catch (error) {
+                console.error('Error creating parish officer:', error);
+                alert('An error occurred while creating the parish officer.');
+            }
+        });
+    </script>
+</body>
+</html>

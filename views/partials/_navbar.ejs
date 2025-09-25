@@ -1,0 +1,59 @@
+<nav class="w-full shadow-md bg-primary">
+    <div class="container px-4 mx-auto">
+        <div class="flex justify-between items-center py-4">
+            <!-- Back Navigation Button -->
+            <button id="back-button" class="flex justify-center items-center w-10 h-10 text-white bg-transparent rounded-full transition-colors duration-200 hover:bg-white hover:bg-opacity-20 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50" title="Go Back">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+            </button>
+
+            <a href="/" class="flex items-center text-white">
+                <img src="/img/yp3_logo.png" alt="Logo" class="mr-2 h-12">
+                <span class="font-bold">Attendance System</span>
+            </a>
+            <div class="flex items-center space-x-4">
+                <button id="mobile-menu-button" class="block md:hidden focus:outline-none">
+                    <svg class="w-6 h-6 text-white fill-current" viewBox="0 0 24 24">
+                        <path fill-rule="evenodd" d="M4 5h16a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V6a1 1 0 011-1zm0 6h16a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2a1 1 0 011-1zm0 6h16a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2a1 1 0 011-1z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+                <div id="mobile-menu" class="overflow-hidden absolute left-0 top-16 flex-col space-x-4 w-full rounded-b-md transition-transform duration-300 origin-top scale-y-0 md:flex md:flex-row md:relative md:top-0 bg-primary md:bg-transparent md:w-auto md:scale-y-100 md:scale-100">
+                    <% if (typeof userRole !== 'undefined') { %>  
+                        <a href="/auth/logout" class="block px-4 py-2 text-gray-100 hover:text-blue-200 md:inline-block">Logout</a>
+                    <% } else { %>
+                        <a href="/auth/login" class="block px-4 py-2 text-gray-100 hover:text-blue-200 md:inline-block">Login</a>
+                    <% } %>
+                </div>
+                
+                <!-- Forward Navigation Button -->
+                <button id="forward-button" class="flex justify-center items-center w-10 h-10 text-white bg-transparent rounded-full transition-colors duration-200 hover:bg-white hover:bg-opacity-20 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50" title="Go Forward">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+    <script>
+        const button = document.querySelector('#mobile-menu-button');
+        const menu = document.querySelector('#mobile-menu');
+        const backButton = document.querySelector('#back-button');
+        const forwardButton = document.querySelector('#forward-button');
+
+        button.addEventListener('click', () => {
+            menu.classList.toggle('scale-y-0');
+            menu.classList.toggle('scale-y-100');
+        });
+
+        // Back navigation button
+        backButton.addEventListener('click', () => {
+            window.history.back();
+        });
+
+        // Forward navigation button
+        forwardButton.addEventListener('click', () => {
+            window.history.forward();
+        });
+    </script>
+</nav>

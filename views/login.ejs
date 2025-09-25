@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link href="/styles/output.css" rel="stylesheet">
+</head>
+<body class="flex items-center justify-center h-screen bg-gray-200">
+    <div class="p-8 bg-white rounded shadow-md w-96">
+        <h2 class="mb-6 text-2xl font-semibold text-gray-800">Login</h2>
+        <form id="loginForm">
+            <div class="mb-4">
+                <label for="username" class="block mb-2 text-sm font-bold text-gray-700">
+                    Username
+                </label>
+                <input class="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline" id="username" name="username" type="text" placeholder="Username">
+            </div>
+            <div class="mb-6">
+                <label for="password" class="block mb-2 text-sm font-bold text-gray-700">
+                    Password
+                </label>
+                <input class="w-full px-3 py-2 mb-3 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline" id="password" name="password" type="password" placeholder="Password">
+            </div>
+            <div class="flex items-center justify-between">
+                <button class="px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline" type="button" id="loginBtn">
+                    Sign In
+                </button>
+                <a class="inline-block text-sm font-bold text-blue-500 align-baseline hover:text-blue-800" href="#">
+                    Forgot Password?
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('loginBtn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const token = data.token;
+
+                    // Store the token in localStorage
+                    localStorage.setItem('token', token);
+
+                    console.log(data);
+                    switch(data.user.role){
+                        case 'superuser':
+                            window.location.href = '/super/dashboard'; // Redirect to home page
+                            break;
+                        case 'province_officer':
+                            window.location.href = '/provinces/'+data.user.provinceId; // Redirect to home page
+                            break;
+                        case 'area_officer':
+                            window.location.href = '/areas/'+data.user.areaId; // Redirect to home page
+                            break;
+                        case 'parish_officer':
+                            window.location.href = '/parishes/'+data.user.parishId; // Redirect to home page
+                            break;
+                        case 'class_teacher':
+                            window.location.href = `/sunday-classes/${data.user.sundayClassId}`; // Redirect to Sunday class page
+                            break;
+                    }
+                    //window.location.href = '/'; // Redirect to home page
+                } else {
+                    const errorData = await response.json();
+                    alert(`Error: ${errorData.message || 'Login failed'}`);
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                alert('An error occurred during login.');
+            }
+        });
+    </script>
+
+    <script>
+        // Function to include token in headers for all fetch requests
+        (function() {
+            const originalFetch = window.fetch;
+            window.fetch = async (...args) => {
+                const token = localStorage.getItem('token');
+                const headers = args[1] ? args[1].headers || {} : {};
+
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                    args[1] = args[1] || {};
+                    args[1].headers = headers;
+                }
+
+                return originalFetch(...args);
+            };
+        })();
+    </script>
+</body>
+</html>

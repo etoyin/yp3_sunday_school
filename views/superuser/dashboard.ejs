@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Superuser Dashboard</title>
+    <link href="/styles/output.css" rel="stylesheet">
+</head>
+<body class="h-screen bg-gray-100">
+    <%- include('../partials/_navbar') %>
+    <div class="container px-4 py-8 mx-auto ">
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-center md:text-4xl text-primary">RCCG, Sunday School Class Management</h1>
+            <p class="mt-2 text-center text-gray-600">Super Admin Level</p>
+        </header>
+        <div class=""> 
+
+            <!-- The Modal -->
+            <div id="createProvinceModal" class="fixed inset-0 z-10 hidden overflow-y-auto">
+                <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                    <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                        <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+                    </div>
+
+                    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="">&#8203;</span>
+
+                    <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full" role="dialog" aria-modal="true" aria-labelledby="modal-headline">
+                        <div class="px-4 pt-5 pb-4 bg-white sm:p-6 sm:pb-4">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900" id="modal-headline">
+                                Create Province
+                            </h3>
+                            <form id="createProvinceForm" class="mt-2">
+                                <div class="mb-4">
+                                    <label class="block mb-2 text-sm font-bold text-gray-700" for="provinceName">
+                                        Province Name:
+                                    </label>
+                                    <input class="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline" id="provinceName" name="provinceName" type="text" placeholder="Province Name" required>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="px-4 py-3 bg-gray-50 sm:px-6 sm:flex sm:flex-row-reverse">
+                            <button id="createProvinceBtn" type="button" class="inline-flex justify-center w-full px-4 py-2 text-base font-medium text-white bg-blue-500 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                                Create
+                            </button>
+                            <button id="closeModalBtn" type="button" class="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            
+            <div class="max-w-4xl p-6 mx-auto mb-8 bg-white rounded-lg shadow-lg">
+                <h2 class="pb-2 mb-6 text-2xl font-semibold border-b text-primary">Select a Province</h2>
+                <div id="provinceList" class="flex">
+                    Loading...
+                </div>
+            </div>
+<div class="text-center">
+    <button id="openModalBtn" class="px-4 py-2 mx-auto my-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline">
+        Create Province
+    </button>
+    <button id="addProvinceOfficerBtn" class="px-4 py-2 mx-auto my-2 font-bold text-white bg-green-500 rounded hover:bg-green-700 focus:outline-none focus:shadow-outline">
+        Add Province Officer
+    </button>
+    <button id="viewProvinceOfficersBtn" class="px-4 py-2 mx-auto my-2 font-bold text-white bg-purple-500 rounded hover:bg-purple-700 focus:outline-none focus:shadow-outline">
+        View Province Officers
+    </button>
+
+<!-- Province Officers Modal -->
+<div id="provinceOfficersModal" class="fixed inset-0 z-10 hidden overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+            <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+        </div>
+
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+        <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full" role="dialog" aria-modal="true" aria-labelledby="modal-headline">
+            <div class="px-4 pt-5 pb-4 bg-white sm:p-6 sm:pb-4">
+                <h3 class="text-lg font-medium leading-6 text-gray-900" id="modal-headline">
+                    Province Officers
+                </h3>
+                <div class="mt-4">
+                    <div id="provinceOfficersList" class="overflow-y-auto max-h-96">
+                        <p class="text-center text-gray-500">Loading province officers...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="px-4 py-3 bg-gray-50 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button id="closeProvinceOfficersModalBtn" type="button" class="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- The Add Province Officer Modal -->
+    <div id="addProvinceOfficerModal" class="fixed inset-0 z-10 hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full" role="dialog" aria-modal="true" aria-labelledby="modal-headline">
+                <div class="px-4 pt-5 pb-4 bg-white sm:p-6 sm:pb-4">
+                    <h3 class="text-lg font-medium leading-6 text-gray-900" id="modal-headline">
+                        Add Province Officer
+                    </h3>
+<form id="addProvinceOfficerForm" class="mt-2" action="/provinces/officer/create" method="POST">
+                        <div class="mb-4">
+                            <label class="block mb-2 text-sm font-bold text-gray-700" for="provinceOfficerName">
+                                Province Officer Name:
+                            </label>
+                            <input class="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline" id="provinceOfficerName" name="provinceOfficerName" type="text" placeholder="Province Officer Name" required>
+                        </div>
+                        <!-- <div class="mb-4">
+                            <label class="block mb-2 text-sm font-bold text-gray-700" for="provinceOfficerEmail">
+                                Province Officer Email:
+                            </label>
+                            <input class="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline" id="provinceOfficerEmail" name="provinceOfficerEmail" type="email" placeholder="Province Officer Email" required>
+                        </div> -->
+                        <div class="mb-4">
+                            <label class="block mb-2 text-sm font-bold text-gray-700" for="provinceOfficerUsername">
+                                Province Officer Email:
+                            </label>
+                            <input class="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline" id="provinceOfficerUsername" name="provinceOfficerUsername" type="email" placeholder="Province Officer email" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block mb-2 text-sm font-bold text-gray-700" for="provinceOfficerPassword">
+                                Province Officer Password:
+                            </label>
+                            <input class="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline" id="provinceOfficerPassword" name="provinceOfficerPassword" type="password" placeholder="Province Officer Password" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block mb-2 text-sm font-bold text-gray-700" for="provinceOfficerConfirmPassword">
+                                Confirm Province Officer Password:
+                            </label>
+                            <input class="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline" id="provinceOfficerConfirmPassword" name="provinceOfficerConfirmPassword" type="password" placeholder="Confirm Province Officer Password" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block mb-2 text-sm font-bold text-gray-700" for="provinceOfficerProvince">
+                                Province:
+                            </label>
+                            <select class="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline" id="provinceOfficerProvince" name="provinceOfficerProvince" required>
+                                <option value="">Select Province</option>
+                                <% provinces.forEach(province => { %>
+                                    <option value="<%= province.id %>"><%= province.name %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+                        
+                    </form>
+                </div>
+                <div class="px-4 py-3 bg-gray-50 sm:px-6 sm:flex sm:flex-row-reverse">
+ <button id="createProvinceOfficerBtn" type="button" class="inline-flex justify-center w-full px-4 py-2 text-base font-medium text-white bg-green-500 border border-transparent rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Create
+                    </button>
+                    <button id="closeAddProvinceOfficerModalBtn" type="button" class="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+        </div>
+    </div>
+
+    <script>
+        // Get the modal
+        var modal = document.getElementById("createProvinceModal");
+
+        // Get the button that opens the modal
+        var btn = document.getElementById("openModalBtn");
+
+        // Get the button that closes the modal
+        var closeModalBtn = document.getElementById("closeModalBtn");
+
+        // Get the modals
+        var addProvinceOfficerModal = document.getElementById("addProvinceOfficerModal");
+        var provinceOfficersModal = document.getElementById("provinceOfficersModal");
+
+        // Get the buttons that close the modals
+        var closeAddProvinceOfficerModalBtn = document.getElementById("closeAddProvinceOfficerModalBtn");
+        var closeProvinceOfficersModalBtn = document.getElementById("closeProvinceOfficersModalBtn");
+
+        // When the user clicks the button, open the modal
+        btn.onclick = function() {
+            modal.classList.remove('hidden');
+        }
+
+        // When the user clicks on the close button, close the modal
+        closeModalBtn.onclick = function() {
+            modal.classList.add('hidden');
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.classList.add('hidden');
+            }
+            if (event.target == addProvinceOfficerModal) {
+                addProvinceOfficerModal.classList.add('hidden');
+            }
+            if (event.target == provinceOfficersModal) {
+                provinceOfficersModal.classList.add('hidden');
+            }
+        }
+
+        document.getElementById('addProvinceOfficerBtn').addEventListener('click', () => {
+            document.getElementById('addProvinceOfficerModal').classList.remove('hidden');
+        });
+
+        document.getElementById('closeAddProvinceOfficerModalBtn').addEventListener('click', () => {
+            document.getElementById('addProvinceOfficerModal').classList.add('hidden');
+        });
+
+        // View Province Officers button click event
+        document.getElementById('viewProvinceOfficersBtn').addEventListener('click', async () => {
+            document.getElementById('provinceOfficersModal').classList.remove('hidden');
+            await fetchProvinceOfficers();
+        });
+
+        document.getElementById('closeProvinceOfficersModalBtn').addEventListener('click', () => {
+            document.getElementById('provinceOfficersModal').classList.add('hidden');
+        });
+
+        // Fetch Province Officers
+        async function fetchProvinceOfficers() {
+            try {
+                const response = await fetch('/provinces/officers', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const provinceOfficers = await response.json();
+                    const provinceOfficersList = document.getElementById('provinceOfficersList');
+                    
+                    if (provinceOfficers.length === 0) {
+                        provinceOfficersList.innerHTML = '<p class="text-center text-gray-500">No province officers found.</p>';
+                        return;
+                    }
+                    
+                    provinceOfficersList.innerHTML = '';
+                    
+                    // Create table
+                    const table = document.createElement('table');
+                    table.className = 'min-w-full divide-y divide-gray-200';
+                    
+                    // Create table header
+                    const thead = document.createElement('thead');
+                    thead.className = 'bg-gray-50';
+                    
+                    const headerRow = document.createElement('tr');
+                    
+                    const nameHeader = document.createElement('th');
+                    nameHeader.className = 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
+                    nameHeader.textContent = 'Name';
+                    
+                    const emailHeader = document.createElement('th');
+                    emailHeader.className = 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
+                    emailHeader.textContent = 'Email';
+                    
+                    const provinceHeader = document.createElement('th');
+                    provinceHeader.className = 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
+                    provinceHeader.textContent = 'Province';
+                    
+                    const actionHeader = document.createElement('th');
+                    actionHeader.className = 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
+                    actionHeader.textContent = 'Action';
+                    
+                    headerRow.appendChild(nameHeader);
+                    headerRow.appendChild(emailHeader);
+                    headerRow.appendChild(provinceHeader);
+                    headerRow.appendChild(actionHeader);
+                    
+                    thead.appendChild(headerRow);
+                    table.appendChild(thead);
+                    
+                    // Create table body
+                    const tbody = document.createElement('tbody');
+                    tbody.className = 'bg-white divide-y divide-gray-200';
+                    
+                    provinceOfficers.forEach(officer => {
+                        const row = document.createElement('tr');
+                        
+                        const nameCell = document.createElement('td');
+                        nameCell.className = 'px-6 py-4 whitespace-nowrap';
+                        nameCell.textContent = officer.username;
+                        
+                        const emailCell = document.createElement('td');
+                        emailCell.className = 'px-6 py-4 whitespace-nowrap';
+                        emailCell.textContent = officer.email;
+                        
+                        const provinceCell = document.createElement('td');
+                        provinceCell.className = 'px-6 py-4 whitespace-nowrap';
+                        provinceCell.textContent = officer.province ? officer.province.name : 'N/A';
+                        
+                        const actionCell = document.createElement('td');
+                        actionCell.className = 'px-6 py-4 whitespace-nowrap';
+                        
+                        const deleteButton = document.createElement('button');
+                        deleteButton.className = 'px-3 py-1 text-sm text-white bg-red-500 rounded hover:bg-red-700 focus:outline-none focus:shadow-outline';
+                        deleteButton.textContent = 'Delete';
+                        deleteButton.addEventListener('click', () => deleteProvinceOfficer(officer.id));
+                        
+                        actionCell.appendChild(deleteButton);
+                        
+                        row.appendChild(nameCell);
+                        row.appendChild(emailCell);
+                        row.appendChild(provinceCell);
+                        row.appendChild(actionCell);
+                        
+                        tbody.appendChild(row);
+                    });
+                    
+                    table.appendChild(tbody);
+                    provinceOfficersList.appendChild(table);
+                } else {
+                    console.error('Failed to fetch province officers');
+                    document.getElementById('provinceOfficersList').innerHTML = '<p class="text-center text-red-500">Failed to load province officers.</p>';
+                }
+            } catch (error) {
+                console.error('Error fetching province officers:', error);
+                document.getElementById('provinceOfficersList').innerHTML = '<p class="text-center text-red-500">Error loading province officers.</p>';
+            }
+        }
+
+        // Delete Province Officer
+        async function deleteProvinceOfficer(id) {
+            if (!confirm('Are you sure you want to delete this province officer?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/provinces/officer/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    alert('Province officer deleted successfully!');
+                    await fetchProvinceOfficers(); // Refresh the list
+                } else {
+                    const errorData = await response.json();
+                    alert(`Error: ${errorData.message || 'Failed to delete province officer'}`);
+                }
+            } catch (error) {
+                console.error('Error deleting province officer:', error);
+                alert('An error occurred while deleting the province officer.');
+            }
+        }
+
+ document.getElementById('createProvinceOfficerBtn').addEventListener('click', async (e) => {
+            e.preventDefault(); // Prevent the default form submission
+
+            const provinceOfficerName = document.getElementById('provinceOfficerName').value;
+            const provinceOfficerUsername = document.getElementById('provinceOfficerUsername').value;
+            const provinceOfficerPassword = document.getElementById('provinceOfficerPassword').value;
+            const provinceOfficerConfirmPassword = document.getElementById('provinceOfficerConfirmPassword').value;
+            const provinceOfficerProvince = document.getElementById('provinceOfficerProvince').value;
+
+            if (!provinceOfficerName) {
+                alert('Please enter the province officer name.');
+                return;
+            }
+
+            if (!provinceOfficerUsername) {
+                alert('Please enter the province officer email.');
+                return;
+            }
+
+            if (!provinceOfficerPassword) {
+                alert('Please enter the province officer password.');
+                return;
+            }
+
+            if (!provinceOfficerConfirmPassword) {
+                alert('Please confirm the province officer password.');
+                return;
+            }
+
+            if (provinceOfficerPassword !== provinceOfficerConfirmPassword) {
+                alert('Passwords do not match!');
+                return;
+            }
+
+            if (!provinceOfficerProvince) {
+                alert('Please select a province.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/provinces/officer/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        provinceOfficerName,
+                        provinceOfficerUsername,
+                        provinceOfficerPassword,
+                        provinceOfficerProvince,
+                        provinceOfficerConfirmPassword
+                    })
+                });
+
+                if (response.ok) {
+                    alert('Province Officer created successfully!');
+                    document.getElementById('addProvinceOfficerForm').reset();
+                    document.getElementById('addProvinceOfficerModal').classList.add('hidden');
+                } else {
+                    const errorData = await response.json();
+                    alert(`Error: ${errorData.message || 'Failed to create province officer'}`);
+                }
+            } catch (error) {
+                console.error('Error creating province officer:', error);
+                alert('An error occurred while creating the province officer.');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Fetch Provinces
+            async function fetchProvinces() {
+                try {
+                    const response = await fetch('/provinces', {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        const provinces = await response.json();
+                        const provinceList = document.getElementById('provinceList');
+                        provinceList.innerHTML = ''; // Clear loading message
+
+ provinces.forEach(province => {
+                            const provinceDiv = document.createElement('div');
+                            provinceDiv.classList.add('p-8', 'm-2', 'text-center', 'bg-white', 'rounded-lg', 'shadow-lg', 'col-span-full', 'mb-4', 'cursor-pointer', 'hover:bg-gray-100', 'transition-colors', 'duration-200');
+                            provinceDiv.addEventListener('click', () => {
+                                window.location.href = `/provinces/${province.id}`;
+                            });
+
+                            const provinceName = document.createElement('h3');
+                            provinceName.classList.add('text-xl', 'font-semibold');
+                            provinceName.textContent = province.name;
+
+                            const viewText = document.createElement('p');
+                            viewText.classList.add('mt-2', 'text-blue-500');
+                            viewText.textContent = 'Click to view areas and manage area officers';
+
+                            provinceDiv.appendChild(provinceName);
+                            provinceDiv.appendChild(viewText);
+                            provinceList.appendChild(provinceDiv);
+                        });
+                    } else {
+                        console.error('Failed to fetch provinces');
+                        document.getElementById('provinceList').textContent = 'Failed to load provinces.';
+                    }
+                } catch (error) {
+                    console.error('Error fetching provinces:', error);
+                    document.getElementById('provinceList').textContent = 'Error loading provinces.';
+                }
+            }
+
+            // Create Province
+            document.getElementById('createProvinceBtn').addEventListener('click', async () => {
+                const provinceName = document.getElementById('provinceName').value;
+
+                try {
+                    const response = await fetch('/provinces/create', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ name: provinceName })
+                    });
+
+                    if (response.ok) {
+                        alert('Province created successfully!');
+                        document.getElementById('provinceName').value = ''; // Clear input
+                        fetchProvinces(); // Refresh province list
+                        modal.classList.add('hidden'); // Close the modal
+                    } else {
+                        const errorData = await response.json();
+                        alert(`Error: ${errorData.message || 'Failed to create province'}`);
+                    }
+                } catch (error) {
+                    console.error('Error creating province:', error);
+                    alert('An error occurred while creating the province.');
+                }
+            });
+
+            fetchProvinces();
+        });
+    </script>
+</body>
+</html>

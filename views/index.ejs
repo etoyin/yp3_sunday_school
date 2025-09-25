@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attendance System</title>
+  <link rel="stylesheet" href="/styles/output.css">
+</head>
+<body class="h-screen bg-gray-100">
+  <%- include('partials/_navbar') %>
+  
+  <div class="container px-4 py-8 mx-auto">
+    <header class="mb-8">
+      <h1 class="text-3xl font-bold text-center md:text-4xl text-primary">Welcome to the Attendance System</h1>
+      <p class="mt-2 text-center text-gray-600">Manage attendance for provinces, areas, parishes, and Sunday classes</p>
+    </header>
+    
+    <% if (!userRole) { %>
+      <!-- Not logged in -->
+      <div class="max-w-md p-6 mx-auto bg-white rounded-lg shadow-md">
+        <h2 class="mb-4 text-xl font-semibold text-center text-primary">Please log in to access the system</h2>
+        <div class="text-center">
+          <a href="/auth/login" class="inline-block px-6 py-3 font-bold text-white bg-blue-500 rounded-lg hover:bg-blue-700">
+            Login
+          </a>
+        </div>
+      </div>
+    <% } else { %>
+      <!-- Logged in - show appropriate dashboard links based on role -->
+      <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <% if (userRole === 'superuser') { %>
+          <div class="p-6 bg-white rounded-lg shadow-md">
+            <h2 class="mb-4 text-xl font-semibold text-primary">Superuser Dashboard</h2>
+            <p class="mb-4 text-gray-600">Manage all aspects of the attendance system.</p>
+            <a href="/super/dashboard" class="inline-block px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700">Access Dashboard</a>
+          </div>
+          
+          <div class="p-6 bg-white rounded-lg shadow-md">
+            <h2 class="mb-4 text-xl font-semibold text-primary">Provinces</h2>
+            <p class="mb-4 text-gray-600">Manage provinces and view attendance statistics.</p>
+            <a href="/provinces/<%=provinceId%>" class="inline-block px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700">View Provinces</a>
+          </div>
+        <% } %>
+        
+        <% if (userRole === 'superuser' || userRole === 'province_officer') { %>
+          <div class="p-6 bg-white rounded-lg shadow-md">
+            <h2 class="mb-4 text-xl font-semibold text-primary">Province Dashboard</h2>
+            <p class="mb-4 text-gray-600">Manage province and view attendance statistics.</p>
+            <a href="/provinces/<%=provinceId%>" class="inline-block px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700">Access Dashboard</a>
+          </div>
+        <% } %>
+        
+        <% if (userRole === 'superuser' || userRole === 'province_officer' || userRole === 'area_officer') { %>
+          <div class="p-6 bg-white rounded-lg shadow-md">
+            <h2 class="mb-4 text-xl font-semibold text-primary">Area Dashboard</h2>
+            <p class="mb-4 text-gray-600">Manage areas and view attendance statistics.</p>
+            <a href="/areas/<%=areaId%>" class="inline-block px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700">Access Dashboard</a>
+          </div>
+        <% } %>
+        
+        <% if (userRole === 'superuser' || userRole === 'province_officer' || userRole === 'area_officer' || userRole === 'parish_officer') { %>
+          <div class="p-6 bg-white rounded-lg shadow-md">
+            <h2 class="mb-4 text-xl font-semibold text-primary">Parish Dashboard</h2>
+            <p class="mb-4 text-gray-600">Manage parishes and view attendance statistics.</p>
+            <a href="/parishes/<%=parishId%>" class="inline-block px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700">Access Dashboard</a>
+          </div>
+        <% } %>
+        
+        <% if (userRole === 'class_teacher' && user && user.sundayClassId) { %>
+          <div class="p-6 bg-white rounded-lg shadow-md">
+            <h2 class="mb-4 text-xl font-semibold text-primary">Sunday Class</h2>
+            <p class="mb-4 text-gray-600">Manage your Sunday class and mark attendance.</p>
+            <a href="/sunday-classes/<%= sundayClassId %>" class="inline-block px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700">Access Sunday Class</a>
+          </div>
+        <% } %>
+      </div>
+    <% } %>
+  </div>
+</body>
+</html>
