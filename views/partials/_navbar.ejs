@@ -12,7 +12,11 @@
                 <img src="/img/yp3_logo.png" alt="Logo" class="mr-2 h-12">
                 <span class="font-bold">Attendance System</span>
             </a>
+            
             <div class="flex items-center space-x-4">
+                <% if (userRole === 'superuser') { %>
+                    <a href="/super/dashboard" class="block px-4 py-2 text-gray-100 hover:text-blue-200 md:inline-block">Dashboard</a>
+                <% } %>
                 <button id="mobile-menu-button" class="block md:hidden focus:outline-none">
                     <svg class="w-6 h-6 text-white fill-current" viewBox="0 0 24 24">
                         <path fill-rule="evenodd" d="M4 5h16a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V6a1 1 0 011-1zm0 6h16a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2a1 1 0 011-1zm0 6h16a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2a1 1 0 011-1z" clip-rule="evenodd" />
