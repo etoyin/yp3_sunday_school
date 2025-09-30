@@ -9,7 +9,7 @@
 <body class="bg-gray-100">
     <div class="flex h-screen">
         <!-- Sidebar -->
-        <div class="w-64 p-6 text-white bg-blue-800">
+        <div class="p-6 w-64 text-white bg-blue-800">
             <h2 class="mb-6 text-2xl font-semibold">Admin Panel</h2>
             <nav>
                 <ul>
@@ -49,7 +49,7 @@
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap"><%= sundayClass.id %></td>
                                         <td class="px-6 py-4 whitespace-nowrap"><%= sundayClass.name %></td>
-                                        <td class="px-6 py-4 whitespace-nowrap"><%= sundayClass.students ? sundayClass.students.length : 0 %></td>
+                                        <td class="px-6 py-4 whitespace-nowrap"><%= sundayClass.studentCount || 0 %></td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <a href="/parish/sunday-classes/<%= sundayClass.id %>" class="mr-3 text-blue-600 hover:text-blue-900">View</a>
                                             <a href="/parish/sunday-classes/<%= sundayClass.id %>/edit" class="mr-3 text-yellow-600 hover:text-yellow-900">Edit</a>
@@ -72,7 +72,7 @@
                 <form action="/parish/sunday-classes/add" method="POST" class="p-6 bg-white rounded-lg shadow">
                     <div class="mb-4">
                         <label for="name" class="block mb-2 text-sm font-bold text-gray-700">Sunday Class Name</label>
-                        <input type="text" id="name" name="name" class="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline" required>
+                        <input type="text" id="name" name="name" class="px-3 py-2 w-full leading-tight text-gray-700 rounded border shadow appearance-none focus:outline-none focus:shadow-outline" required>
                     </div>
                     <button type="submit" class="px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline">
                         Add Sunday Class

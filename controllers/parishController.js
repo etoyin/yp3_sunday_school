@@ -74,6 +74,7 @@ const getParishById = async (req, res) => {
         const sundayClasses = await SundayClass.findAll({
             where: { parish_id: parishId },
             attributes: ['id', 'name', 'description', 'parish_id', [Sequelize.literal('(SELECT COUNT(*) FROM students WHERE students.sunday_class_id = sunday_classes.id)'), 'studentCount']],
+            raw: true
         });
 
         // Get class teachers for this parish
