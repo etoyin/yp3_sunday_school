@@ -63,17 +63,20 @@
                 </div>
             </div>
 
-            <div class="text-center">
-                <button id="createSundayClassBtn" class="px-4 py-2 mx-auto my-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline">
-                    Create Sunday Class
-                </button>
-                <button id="addClassTeacherBtn" class="px-4 py-2 mx-auto my-2 font-bold text-white bg-green-500 rounded hover:bg-green-700 focus:outline-none focus:shadow-outline">
-                    Add Class Teacher
-                </button>
-                <button id="viewClassTeachersBtn" class="px-4 py-2 mx-auto my-2 font-bold text-white bg-purple-500 rounded hover:bg-purple-700 focus:outline-none focus:shadow-outline">
-                    View Class Teachers
-                </button>
-            </div>
+        <div class="text-center">
+            <a href="/parishes/<%= parish.id %>/analytics" class="px-4 py-2 mx-auto my-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline">
+                View Analytics
+            </a>
+            <button id="createSundayClassBtn" class="px-4 py-2 mx-auto my-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline">
+                Create Sunday Class
+            </button>
+            <button id="addClassTeacherBtn" class="px-4 py-2 mx-auto my-2 font-bold text-white bg-green-500 rounded hover:bg-green-700 focus:outline-none focus:shadow-outline">
+                Add Class Teacher
+            </button>
+            <button id="viewClassTeachersBtn" class="px-4 py-2 mx-auto my-2 font-bold text-white bg-purple-500 rounded hover:bg-purple-700 focus:outline-none focus:shadow-outline">
+                View Class Teachers
+            </button>
+        </div>
         </div>
 
         <!-- Create Sunday Class Modal -->

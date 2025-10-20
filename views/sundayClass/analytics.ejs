@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= sundayClass.name %> - Analytics</title>
+    <link rel="stylesheet" href="/styles/output.css">
+</head>
+<body class="bg-gray-100">
+    <%- include('../partials/_navbar') %>
+    <div class="container p-4 mx-auto">
+        <div class="flex justify-between items-center mb-4">
+            <h1 class="text-2xl font-bold"><%= sundayClass.name %> - Attendance Analytics</h1>
+            <div>
+                <a href="/sunday-classes/<%= sundayClass.id %>" class="px-4 py-2 text-white bg-blue-500 rounded-lg">Class View</a>
+                <a href="/sunday-classes/<%= sundayClass.id %>/mark-attendance" class="px-4 py-2 text-white bg-green-500 rounded-lg">Mark Attendance</a>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 mb-4 md:grid-cols-3">
+            <div class="p-4 text-white bg-blue-500 rounded-lg shadow-md">
+                <h2 class="text-lg font-bold">Students</h2>
+                <p class="text-3xl"><%= studentsCount %></p>
+            </div>
+            <div class="p-4 text-white bg-green-500 rounded-lg shadow-md">
+                <h2 class="text-lg font-bold">Dates Analyzed</h2>
+                <p class="text-3xl"><%= sundayDates.length %></p>
+            </div>
+            <div class="p-4 text-white bg-purple-500 rounded-lg shadow-md">
+                <h2 class="text-lg font-bold">Attendance Rate</h2>
+                <p class="text-3xl"><%= attendanceRate %>%</p>
+            </div>
+        </div>
+
+        <div class="p-4 mb-4 bg-white rounded-lg shadow-md">
+            <h2 class="mb-2 text-xl font-bold">Attendance by Date</h2>
+            <table class="w-full">
+                <thead class="bg-gray-200">
+                    <tr>
+                        <th class="p-2 text-left">Date</th>
+                        <th class="p-2 text-left">Present</th>
+                        <th class="p-2 text-left">Absent</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% sundayDates.forEach((date, index) => { %>
+                        <tr class="<%= index % 2 === 0 ? 'bg-gray-50' : '' %>">
+                            <td class="p-2"><%= date.display %></td>
+                            <td class="p-2 font-bold text-green-600"><%= perDate[date.full].present %></td>
+                            <td class="p-2 font-bold text-red-600"><%= perDate[date.full].absent %></td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="p-4 bg-white rounded-lg shadow-md">
+            <h2 class="mb-2 text-xl font-bold">Top 5 Attendees</h2>
+            <ul>
+                <% topAttendees.forEach((attendee, index) => { %>
+                    <li class="flex justify-between p-2 <%= index % 2 === 0 ? 'bg-gray-50' : '' %>">
+                        <span><%= attendee.name %></span>
+                        <span class="font-bold text-green-600"><%= attendee.presentCount %> days</span>
+                    </li>
+                <% }) %>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

@@ -12,8 +12,13 @@ const checkRole = (roles) => {
     }
 
     const userRole = req.decoded.user.role;
+
+    console.log("ROLE", userRole);
+    
+    
     
     if (roles.includes(userRole)) {
+      console.log("ROLE", roles);
       next();
     } else {
       return res.status(403).render('error', { 

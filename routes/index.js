@@ -28,14 +28,15 @@ const {
   createSundayClassParish,
   getAllClassTeachers,
   createClassTeacher,
-  deleteClassTeacher
+  deleteClassTeacher,
+  parishAnalytics
 } = require('../controllers/parishController');
 
 const { index } = require('../controllers/SuperUserController');
 
 
 
-const { createSundayClass, addStudentToSundayClass, viewSundayClass, updateStudentAttendance, markAttendanceForm, markStudentAttendance } = require('../controllers/sundayClassController');
+const { createSundayClass, addStudentToSundayClass, viewSundayClass, updateStudentAttendance, markAttendanceForm, markStudentAttendance, classAnalytics } = require('../controllers/sundayClassController');
 const { checkToken } = require('../middleware/auth');
 const { 
   checkRole, 
@@ -78,6 +79,7 @@ router.post('/sunday-classes/add-student', checkToken, checkRole(['superuser', '
 
 // SundayClass view route with specific access control
 router.get('/sunday-classes/:id', checkToken, checkSundayClassAccess, viewSundayClass);
+router.get('/sunday-classes/:id/analytics', checkToken, checkSundayClassAccess, classAnalytics);
 
 // Student attendance routes with specific access control
 router.get('/sunday-classes/:id/mark-attendance', checkToken, checkSundayClassAccess, markAttendanceForm);
@@ -102,6 +104,7 @@ router.delete('/areas/parish-officer/:id', checkToken, checkRole(['superuser', '
 
 // Parish routes with role-based access
 router.get('/parishes/:id', checkToken, checkParishAccess, getParishById);
+router.get('/parishes/:id/analytics', checkToken, checkParishAccess, parishAnalytics);
 router.post('/parishes/:id/sunday-classes/create', checkToken, checkParishAccess, createSundayClassParish);
 router.get('/parishes/:parishId/class-teachers', checkToken, checkParishAccess, getAllClassTeachers);
 router.post('/parishes/:id/class-teachers/create', checkToken, checkParishAccess, createClassTeacher);

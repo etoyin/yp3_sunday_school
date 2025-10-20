@@ -83,6 +83,10 @@
                     });
                     
                     // Send the form data to the server using fetch
+                    // Disable button to prevent duplicate submissions
+                    const button = form.querySelector('button');
+                    button.disabled = true;
+
                     fetch('/student-attendance/mark', {
                         method: 'POST',
                         headers: {
@@ -91,38 +95,35 @@
                         },
                         body: JSON.stringify(data)
                     })
-                    .then(response => {
-                        if (response.ok) {
-                            // Move the button to the other list
-                            const button = form.querySelector('button');
-                            const studentId = button.getAttribute('data-student-id');
-                            const currentStatus = formData.get('status');
-                            
-                            // Get the status input field
-                            const statusInput = form.querySelector('input[name="status"]');
-                            
-                            // Update the form to toggle the status
-                            const newStatus = currentStatus === 'present' ? 'absent' : 'present';
-                            statusInput.value = newStatus;
-                            
-                            // Update the button appearance and move to the appropriate list
-                            if (currentStatus === 'present') {
-                                // Student was marked as present, now mark as absent
-                                button.classList.remove('bg-green-500', 'hover:bg-green-600');
-                                button.classList.add('bg-red-500', 'hover:bg-red-600');
-                                absentList.appendChild(form);
-                            } else {
-                                // Student was marked as absent, now mark as present
-                                button.classList.remove('bg-red-500', 'hover:bg-red-600');
-                                button.classList.add('bg-green-500', 'hover:bg-green-600');
-                                presentList.appendChild(form);
-                            }
+                    .then(async response => {
+                        if (!response.ok) throw new Error('Error updating attendance');
+                        const result = await response.json();
+
+                        // Determine new status from server response (fallback to submitted status)
+                        const serverStatus = result && result.data && result.data.status ? result.data.status : formData.get('status');
+
+                        // Toggle the hidden input for the next click
+                        const statusInput = form.querySelector('input[name="status"]');
+                        statusInput.value = serverStatus === 'present' ? 'absent' : 'present';
+
+                        // Update UI: move to appropriate list and switch styles
+                        if (serverStatus === 'present') {
+                            // Move to Present list
+                            button.classList.remove('bg-red-500', 'hover:bg-red-600');
+                            button.classList.add('bg-green-500', 'hover:bg-green-600');
+                            presentList.appendChild(form);
                         } else {
-                            console.error('Error updating attendance');
+                            // Move to Absent list
+                            button.classList.remove('bg-green-500', 'hover:bg-green-600');
+                            button.classList.add('bg-red-500', 'hover:bg-red-600');
+                            absentList.appendChild(form);
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
+                    })
+                    .finally(() => {
+                        button.disabled = false;
                     });
                 });
             });

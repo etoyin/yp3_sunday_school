@@ -3,6 +3,8 @@ const SundayClass = require('../models/sundayClassModel');
 const Area = require('../models/areaModel');
 const Province = require('../models/provinceModel');
 const User = require('../models/userModel');
+const Student = require('../models/studentModel');
+const StudentAttendance = require('../models/studentAttendanceModel');
 const { Op, Sequelize } = require('sequelize');
 
 
@@ -453,10 +455,138 @@ const deleteClassTeacher = async (req, res) => {
     }
 };
 
+const parishAnalytics = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const parish = await Parish.findByPk(id, {
+            include: [{ model: Area, as: 'parentArea', include: [{ model: Province, as: 'province' }] }]
+        });
+
+        if (!parish) {
+            return res.status(404).render('error', { message: 'Parish not found' });
+        }
+
+        const sundayClasses = await SundayClass.findAll({ where: { parish_id: id } });
+        const classIds = sundayClasses.map(c => c.id);
+
+        const students = await Student.findAll({ where: { sundayClassId: { [Op.in]: classIds } } });
+        
+        const sundays = [];
+        const today = new Date();
+        const mostRecentSunday = new Date(today);
+        mostRecentSunday.setDate(today.getDate() - ((today.getDay() + 7 - 0) % 7));
+
+        for (let i = 0; i < 8; i++) {
+            const d = new Date(mostRecentSunday);
+            d.setDate(mostRecentSunday.getDate() - (7 * i));
+            sundays.unshift(d);
+        }
+
+        const sundayDates = sundays.map(date => ({
+            display: `${date.toLocaleString('default', { month: 'short' })} ${date.getDate()}`,
+            full: date.toISOString().split('T')[0]
+        }));
+
+        const studentIds = students.map(s => s.id);
+        const attendanceRecords = await StudentAttendance.findAll({
+            where: {
+                studentId: { [Op.in]: studentIds },
+                date: { [Op.in]: sundayDates.map(d => d.full) }
+            },
+            raw: true
+        });
+
+        const classMetrics = {};
+        sundayClasses.forEach(c => {
+            classMetrics[c.id] = {
+                name: c.name,
+                studentsCount: 0,
+                totalPresent: 0,
+                perDate: {}
+            };
+            sundayDates.forEach(date => {
+                classMetrics[c.id].perDate[date.full] = { present: 0, absent: 0 };
+            });
+        });
+
+        students.forEach(student => {
+            if (classMetrics[student.sundayClassId]) {
+                classMetrics[student.sundayClassId].studentsCount++;
+            }
+        });
+
+        sundayDates.forEach(date => {
+            sundayClasses.forEach(c => {
+                classMetrics[c.id].perDate[date.full].absent = classMetrics[c.id].studentsCount;
+            });
+        });
+
+        attendanceRecords.forEach(record => {
+            const student = students.find(s => s.id === record.studentId);
+            if (student && classMetrics[student.sundayClassId] && record.status === 'present') {
+                classMetrics[student.sundayClassId].totalPresent++;
+                classMetrics[student.sundayClassId].perDate[record.date].present++;
+                classMetrics[student.sundayClassId].perDate[record.date].absent--;
+            }
+        });
+
+        let parishTotalPresent = 0;
+        let parishTotalPossible = 0;
+
+        const metricsArray = Object.values(classMetrics).map(metrics => {
+            const totalPossible = metrics.studentsCount * sundayDates.length;
+            metrics.attendanceRate = totalPossible > 0 ? Math.round((metrics.totalPresent / totalPossible) * 100) : 0;
+            parishTotalPresent += metrics.totalPresent;
+            parishTotalPossible += totalPossible;
+            return metrics;
+        });
+
+        const parishAttendanceRate = parishTotalPossible > 0 ? Math.round((parishTotalPresent / parishTotalPossible) * 100) : 0;
+
+        const topClasses = metricsArray.sort((a, b) => b.attendanceRate - a.attendanceRate).slice(0, 5);
+
+        const classNameById = sundayClasses.reduce((acc, c) => { acc[c.id] = c.name; return acc; }, {});
+        const presentByStudent = {};
+        attendanceRecords.forEach(record => {
+            if (record.status === 'present') {
+                presentByStudent[record.studentId] = (presentByStudent[record.studentId] || 0) + 1;
+            }
+        });
+        const topStudents = Object.entries(presentByStudent)
+            .map(([studentId, presentCount]) => {
+                const s = students.find(st => st.id === Number(studentId));
+                return {
+                    id: Number(studentId),
+                    name: s ? `${s.firstName} ${s.lastName}` : `Student ${studentId}`,
+                    className: s ? classNameById[s.sundayClassId] : 'Unknown',
+                    presentCount
+                };
+            })
+            .sort((a, b) => b.presentCount - a.presentCount)
+            .slice(0, 10);
+
+        res.render('parish/analytics', {
+            parish,
+            sundayDates,
+            classes: metricsArray,
+            parishAttendanceRate,
+            topClasses,
+            topStudents
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).render('error', {
+            message: 'Error fetching parish analytics',
+            error: { status: 500, stack: error.stack }
+        });
+    }
+};
+
 module.exports = {
     getParishById,
     createSundayClassParish,
     getAllClassTeachers,
     createClassTeacher,
-    deleteClassTeacher
+    deleteClassTeacher,
+    parishAnalytics
 };

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= parish.name %> - Analytics</title>
+    <link rel="stylesheet" href="/styles/output.css">
+</head>
+<body class="bg-gray-100">
+    <%- include('../partials/_navbar') %>
+    <div class="container p-4 mx-auto">
+        <div class="flex justify-between items-center mb-4">
+            <h1 class="text-2xl font-bold"><%= parish.name %> - Attendance Analytics</h1>
+            <a href="/parishes/<%= parish.id %>" class="px-4 py-2 text-white bg-blue-500 rounded-lg">Parish View</a>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 mb-4 md:grid-cols-3">
+            <div class="p-4 text-white bg-blue-500 rounded-lg shadow-md">
+                <h2 class="text-lg font-bold">Classes</h2>
+                <p class="text-3xl"><%= classes.length %></p>
+            </div>
+            <div class="p-4 text-white bg-green-500 rounded-lg shadow-md">
+                <h2 class="text-lg font-bold">Dates Analyzed</h2>
+                <p class="text-3xl"><%= sundayDates.length %></p>
+            </div>
+            <div class="p-4 text-white bg-purple-500 rounded-lg shadow-md">
+                <h2 class="text-lg font-bold">Parish Attendance Rate</h2>
+                <p class="text-3xl"><%= parishAttendanceRate %>%</p>
+            </div>
+        </div>
+
+        <div class="p-4 mb-4 bg-white rounded-lg shadow-md">
+            <h2 class="mb-2 text-xl font-bold">Attendance by Class</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-200">
+                        <tr>
+                            <th class="p-2 text-left">Class</th>
+                            <% sundayDates.forEach(date => { %>
+                                <th class="p-2 text-left"><%= date.display %></th>
+                            <% }) %>
+                            <th class="p-2 text-left">Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% classes.forEach((c, index) => { %>
+                            <tr class="<%= index % 2 === 0 ? 'bg-gray-50' : '' %>">
+                                <td class="p-2 font-bold"><%= c.name %></td>
+                                <% sundayDates.forEach(date => { %>
+                                    <td class="p-2"><%= c.perDate[date.full].present %> / <%= c.studentsCount %></td>
+                                <% }) %>
+                                <td class="p-2 font-bold text-blue-600"><%= c.attendanceRate %>%</td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="p-4 bg-white rounded-lg shadow-md">
+            <h2 class="mb-2 text-xl font-bold">Top 5 Classes</h2>
+            <ul>
+                <% topClasses.forEach((c, index) => { %>
+                    <li class="flex justify-between p-2 <%= index % 2 === 0 ? 'bg-gray-50' : '' %>">
+                        <span><%= c.name %></span>
+                        <span class="px-2 py-1 text-white bg-blue-500 rounded-full"><%= c.attendanceRate %>%</span>
+                    </li>
+                <% }) %>
+            </ul>
+        </div>
+
+        <div class="p-4 mt-4 bg-white rounded-lg shadow-md">
+            <h2 class="mb-2 text-xl font-bold">Top 10 Students</h2>
+            <ul>
+                <% topStudents && topStudents.forEach((s, index) => { %>
+                    <li class="flex justify-between p-2 <%= index % 2 === 0 ? 'bg-gray-50' : '' %>">
+                        <span><%= s.name %> <span class="text-gray-500">(<%= s.className %>)</span></span>
+                        <span class="px-2 py-1 text-white bg-green-500 rounded-full"><%= s.presentCount %> present</span>
+                    </li>
+                <% }) %>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
