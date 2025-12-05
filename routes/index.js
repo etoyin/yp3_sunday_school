@@ -36,7 +36,7 @@ const { index } = require('../controllers/SuperUserController');
 
 
 
-const { createSundayClass, addStudentToSundayClass, viewSundayClass, updateStudentAttendance, markAttendanceForm, markStudentAttendance, classAnalytics } = require('../controllers/sundayClassController');
+const { createSundayClass, addStudentToSundayClass, viewSundayClass, updateStudentAttendance, markAttendanceForm, markStudentAttendance, classAnalytics, changeStudentClass, deleteStudent, getStudent, updateStudent } = require('../controllers/sundayClassController');
 const { checkToken } = require('../middleware/auth');
 const { 
   checkRole, 
@@ -85,6 +85,12 @@ router.get('/sunday-classes/:id/analytics', checkToken, checkSundayClassAccess, 
 router.get('/sunday-classes/:id/mark-attendance', checkToken, checkSundayClassAccess, markAttendanceForm);
 router.post('/student-attendance', checkToken, checkRole(['superuser', 'province_officer', 'area_officer', 'parish_officer', 'class_teacher']), updateStudentAttendance);
 router.post('/student-attendance/mark', checkToken, checkRole(['superuser', 'province_officer', 'area_officer', 'parish_officer', 'class_teacher']), markStudentAttendance);
+
+// Student management routes
+router.post('/students/:id/change-class', checkToken, checkRole(['superuser', 'province_officer', 'area_officer', 'parish_officer', 'class_teacher']), changeStudentClass);
+router.delete('/students/:id', checkToken, checkRole(['superuser', 'province_officer', 'area_officer', 'parish_officer', 'class_teacher']), deleteStudent);
+router.get('/students/:id', checkToken, checkRole(['superuser', 'province_officer', 'area_officer', 'parish_officer', 'class_teacher']), getStudent);
+router.put('/students/:id', checkToken, checkRole(['superuser', 'province_officer', 'area_officer', 'parish_officer', 'class_teacher']), updateStudent);
 
 // Province routes with role-based access
 router.post('/provinces/create', checkToken, checkRole(['superuser']), createProvince);

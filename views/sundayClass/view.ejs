@@ -26,20 +26,21 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Student Name</th>
-                        <% sundayDates.forEach(date => { %>
+                        <% (sundayDates || []).forEach(date => { %>
                             <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                                 <%= date.display %>
                             </th>
                         <% }); %>
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                    <% students.forEach(student => { %>
+                    <% (students || []).forEach(student => { %>
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">
                                 <%= student.firstName %> <%= student.lastName %>
                             </td>
-                            <% sundayDates.forEach(date => { %>
+                            <% (sundayDates || []).forEach(date => { %>
                                 <td class="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">
                                     <% 
                                         const currentStatus = attendanceMap[student.id] && attendanceMap[student.id][date.full] 
@@ -66,10 +67,133 @@
                                     </form>
                                 </td>
                             <% }); %>
+                            <td class="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">
+                                <div class="flex items-center gap-4">
+                                    
+                                    <button class="px-3 py-2 text-white bg-gray-600 rounded hover:bg-gray-700" 
+                                            data-id="<%= student.id %>"
+                                            data-first="<%= student.firstName %>"
+                                            data-last="<%= student.lastName %>"
+                                            data-dob="<%= student.dob ? (new Date(student.dob).toISOString().split('T')[0]) : '' %>"
+                                            data-phone="<%= student.phoneNumber %>"
+                                            data-email="<%= student.email %>"
+                                            data-class-id="<%= student.sundayClassId %>"
+                                            onclick="openEditStudentModal(this)"
+                                            title="Edit student details">
+                                        Edit
+                                    </button>
+                                    <button class="px-3 py-2 text-white bg-red-500 rounded hover:bg-red-600" onclick="deleteStudent(<%= student.id %>)" title="Delete student">Delete</button>
+                                </div>
+                            </td>
                         </tr>
                     <% }); %>
                 </tbody>
-            </table>
+</table>
+
+<!-- Edit Student Modal -->
+<div id="editStudentModal" class="fixed inset-0 z-50 hidden bg-gray-800 bg-opacity-50 items-center justify-center">
+  <div class="bg-white rounded-lg shadow-lg w-full max-w-2xl">
+    <div class="flex items-center justify-between px-6 py-4 border-b">
+      <h3 class="text-lg font-semibold">Edit Student</h3>
+      <button class="text-gray-500 hover:text-gray-700" onclick="closeEditStudentModal()">✕</button>
+    </div>
+    <div class="p-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label for="editFirstName" class="block text-sm font-medium text-gray-700">First Name</label>
+          <input id="editFirstName" type="text" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" />
+        </div>
+        <div>
+          <label for="editLastName" class="block text-sm font-medium text-gray-700">Last Name</label>
+          <input id="editLastName" type="text" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" />
+        </div>
+        <div>
+          <label for="editDob" class="block text-sm font-medium text-gray-700">Date of Birth</label>
+          <input id="editDob" type="date" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" />
+        </div>
+        <div>
+          <label for="editPhone" class="block text-sm font-medium text-gray-700">Phone Number</label>
+          <input id="editPhone" type="tel" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" />
+        </div>
+        <div class="md:col-span-2">
+          <label for="editEmail" class="block text-sm font-medium text-gray-700">Email</label>
+          <input id="editEmail" type="email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" />
+        </div>
+        <div class="md:col-span-2">
+          <label for="editClassId" class="block text-sm font-medium text-gray-700">Class</label>
+          <select id="editClassId" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+            <% (classOptions || []).forEach(function(opt){ %>
+              <option value="<%= opt.id %>"><%= opt.name %></option>
+            <% }) %>
+          </select>
+        </div>
+      </div>
+      <div class="mt-6 flex justify-end gap-3">
+        <button class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300" onclick="closeEditStudentModal()">Cancel</button>
+        <button id="editStudentSaveBtn" class="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600">Save Changes</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    function openEditStudentModal(btn) {
+      const modal = document.getElementById('editStudentModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+
+      const id = btn.dataset.id;
+      document.getElementById('editStudentSaveBtn').dataset.id = id;
+
+      document.getElementById('editFirstName').value = btn.dataset.first || '';
+      document.getElementById('editLastName').value = btn.dataset.last || '';
+      // Normalize dob to YYYY-MM-DD if includes time component
+      const dob = btn.dataset.dob || '';
+      const normalizedDob = dob && dob.includes('T') ? dob.split('T')[0] : dob;
+      document.getElementById('editDob').value = normalizedDob;
+      document.getElementById('editPhone').value = btn.dataset.phone || '';
+      document.getElementById('editEmail').value = btn.dataset.email || '';
+      document.getElementById('editClassId').value = btn.dataset.classId || '';
+    }
+
+    function closeEditStudentModal() {
+      const modal = document.getElementById('editStudentModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    document.getElementById('editStudentSaveBtn').addEventListener('click', async (e) => {
+      const btn = e.currentTarget;
+      const id = btn.dataset.id;
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+      try {
+        const payload = {
+          firstName: document.getElementById('editFirstName').value.trim(),
+          lastName: document.getElementById('editLastName').value.trim(),
+          dob: document.getElementById('editDob').value,
+          phoneNumber: document.getElementById('editPhone').value.trim(),
+          email: document.getElementById('editEmail').value.trim(),
+          sundayClassId: document.getElementById('editClassId').value
+        };
+        const res = await fetch(`/students/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.message || 'Failed to update student');
+        }
+        closeEditStudentModal();
+        window.location.reload();
+      } catch (error) {
+        alert(error.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Save Changes';
+      }
+    });
+  </script>
+</div>
         </div>
 
         <button id="addStudentBtn" class="px-4 py-2 font-medium text-white bg-blue-500 rounded transition duration-150 ease-in-out hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
@@ -78,44 +202,44 @@
 
         <!-- Add Student Modal -->
         <div id="addStudentModal" class="hidden overflow-y-auto fixed inset-0 z-50 w-full h-full bg-gray-600 bg-opacity-50">
-            <div class="relative top-20 p-5 mx-auto w-11/12 bg-white rounded-md border shadow-lg md:w-1/2 lg:w-1/3">
-                <div class="flex justify-between items-center mb-4">
+            <div class="relative top-20 p-6 md:p-8 mx-auto w-11/12 bg-white rounded-md border shadow-lg md:w-1/2 lg:w-1/3">
+                <div class="flex justify-between items-center mb-6">
                     <h3 class="text-lg font-medium text-gray-900">Add New Student</h3>
                     <button id="closeModal" class="text-gray-400 hover:text-gray-500">
                         <span class="text-2xl">&times;</span>
                     </button>
                 </div>
                 
-                <form id="addStudentForm" action="/sunday-classes/add-student" method="POST" class="space-y-4">
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <form id="addStudentForm" action="/sunday-classes/add-student" method="POST" class="space-y-6">
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                         <div>
                             <label for="firstName" class="block text-sm font-medium text-gray-700">First Name</label>
                             <input type="text" id="firstName" name="firstName" required 
-                                class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+                                class="block mt-2 w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
                         </div>
                         
                         <div>
                             <label for="lastName" class="block text-sm font-medium text-gray-700">Last Name</label>
                             <input type="text" id="lastName" name="lastName" required 
-                                class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+                                class="block mt-2 w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
                         </div>
                         
                         <div>
                             <label for="dob" class="block text-sm font-medium text-gray-700">Date of Birth</label>
                             <input type="date" id="dob" name="dob" required 
-                                class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+                                class="block mt-2 w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
                         </div>
                         
                         <div>
                             <label for="phoneNumber" class="block text-sm font-medium text-gray-700">Phone Number</label>
                             <input type="text" id="phoneNumber" name="phoneNumber" 
-                                class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+                                class="block mt-2 w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
                         </div>
                         
                         <div class="md:col-span-2">
                             <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
                             <input type="email" id="email" name="email" required 
-                                class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+                                class="block mt-2 w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
                         </div>
                     </div>
                     
@@ -199,6 +323,45 @@
                 alert('An error occurred while adding the student.');
             }
         });
+
+        async function changeClass(studentId) {
+            const select = document.getElementById(`classSelect-${studentId}`);
+            const newClassId = select.value;
+            try {
+                const response = await fetch(`/students/${studentId}/change-class`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sundayClassId: parseInt(newClassId) })
+                });
+                if (response.ok) {
+                    alert('Student class updated');
+                    window.location.reload();
+                } else {
+                    const errorData = await response.json();
+                    alert(`Error: ${errorData.message || 'Failed to change class'}`);
+                }
+            } catch (error) {
+                console.error('Error changing class:', error);
+                alert('An error occurred while changing the class.');
+            }
+        }
+
+        async function deleteStudent(studentId) {
+            if (!confirm('Are you sure you want to delete this student? This will remove their attendance records as well.')) return;
+            try {
+                const response = await fetch(`/students/${studentId}`, { method: 'DELETE' });
+                if (response.ok) {
+                    alert('Student deleted');
+                    window.location.reload();
+                } else {
+                    const errorData = await response.json();
+                    alert(`Error: ${errorData.message || 'Failed to delete student'}`);
+                }
+            } catch (error) {
+                console.error('Error deleting student:', error);
+                alert('An error occurred while deleting the student.');
+            }
+        }
     </script>
 </body>
 </html>

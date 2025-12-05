@@ -74,6 +74,12 @@ const viewSundayClass = async (req, res) => {
       }
     });
 
+    // Fetch all Sunday classes in the same parish to allow moving students
+    const classOptions = await SundayClass.findAll({
+      where: { parishId: sundayClass.parishId },
+      attributes: ['id', 'name']
+    });
+
     // Generate the last 4 Sundays for attendance columns
     const sundays = [];
     const today = new Date();
@@ -121,7 +127,8 @@ const viewSundayClass = async (req, res) => {
       sundayClass, 
       students, 
       sundayDates,
-      attendanceMap
+      attendanceMap,
+      classOptions
     });
 
   } catch (error) {
@@ -380,3 +387,99 @@ const classAnalytics = async (req, res) => {
 };
 
 module.exports = { createSundayClass, addStudentToSundayClass, viewSundayClass, updateStudentAttendance, markAttendanceForm, markStudentAttendance, classAnalytics };
+
+// Change a student's Sunday class
+const changeStudentClass = async (req, res) => {
+  try {
+    const { id } = req.params; // student id
+    const { sundayClassId } = req.body; // new class id
+
+    const student = await Student.findByPk(id);
+    if (!student) {
+      return res.status(404).json({ success: false, message: 'Student not found' });
+    }
+
+    const targetClass = await SundayClass.findByPk(sundayClassId);
+    if (!targetClass) {
+      return res.status(404).json({ success: false, message: 'Target Sunday Class not found' });
+    }
+
+    // Optionally: ensure same parish move (business rule). Skipped unless required.
+    student.sundayClassId = sundayClassId;
+    await student.save();
+
+    return res.status(200).json({ success: true, message: 'Student class updated', data: { studentId: id, sundayClassId } });
+  } catch (error) {
+    console.error('Error changing student class:', error);
+    return res.status(500).json({ success: false, message: 'Error changing student class' });
+  }
+};
+
+// Delete a student and related attendance records
+const deleteStudent = async (req, res) => {
+  try {
+    const { id } = req.params; // student id
+
+    const student = await Student.findByPk(id);
+    if (!student) {
+      return res.status(404).json({ success: false, message: 'Student not found' });
+    }
+
+    // Remove attendance records to avoid FK issues
+    await StudentAttendance.destroy({ where: { studentId: id } });
+    await Student.destroy({ where: { id } });
+
+    return res.status(200).json({ success: true, message: 'Student deleted' });
+  } catch (error) {
+    console.error('Error deleting student:', error);
+    return res.status(500).json({ success: false, message: 'Error deleting student' });
+  }
+};
+
+module.exports.changeStudentClass = changeStudentClass;
+module.exports.deleteStudent = deleteStudent;
+
+// Fetch single student (JSON)
+const getStudent = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const student = await Student.findByPk(id);
+    if (!student) {
+      return res.status(404).json({ success: false, message: 'Student not found' });
+    }
+    return res.status(200).json({ success: true, data: student });
+  } catch (error) {
+    console.error('Error fetching student:', error);
+    return res.status(500).json({ success: false, message: 'Error fetching student' });
+  }
+};
+
+// Update student info (and optional class)
+const updateStudent = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { firstName, lastName, dob, phoneNumber, email, sundayClassId } = req.body;
+
+    const student = await Student.findByPk(id);
+    if (!student) {
+      return res.status(404).json({ success: false, message: 'Student not found' });
+    }
+
+    const payload = {};
+    if (firstName !== undefined) payload.firstName = firstName;
+    if (lastName !== undefined) payload.lastName = lastName;
+    if (dob !== undefined) payload.dob = dob;
+    if (phoneNumber !== undefined) payload.phoneNumber = phoneNumber;
+    if (email !== undefined) payload.email = email;
+    if (sundayClassId !== undefined) payload.sundayClassId = sundayClassId;
+
+    await student.update(payload);
+    return res.status(200).json({ success: true, message: 'Student updated', data: student });
+  } catch (error) {
+    console.error('Error updating student:', error);
+    return res.status(500).json({ success: false, message: 'Error updating student' });
+  }
+};
+
+module.exports.getStudent = getStudent;
+module.exports.updateStudent = updateStudent;

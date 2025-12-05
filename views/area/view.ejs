@@ -249,27 +249,37 @@
             }
         }
         
-        // Create Parish
-        document.getElementById('createParishSubmitBtn').addEventListener('click', async () => {
+        // Single handler for Create Parish (with double-submit guard)
+        const createParishSubmitBtn = document.getElementById('createParishSubmitBtn');
+        let creatingParish = false;
+
+        createParishSubmitBtn.addEventListener('click', async () => {
+            if (creatingParish) return; // prevent double clicks
+            creatingParish = true;
+            createParishSubmitBtn.disabled = true;
+
             const parishName = document.getElementById('parishName').value;
-            
+
             if (!parishName) {
                 alert('Please enter the parish name.');
+                creatingParish = false;
+                createParishSubmitBtn.disabled = false;
                 return;
             }
-            
+
             try {
-                const response = await fetch('/areas/<%= area.id %>/parishes/create', {
+                const areaId = document.getElementById('createParishModal').dataset.areaId;
+                const response = await fetch(`/areas/${areaId}/parishes/create`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ 
+                    body: JSON.stringify({
                         name: parishName,
-                        areaId: parseInt('<%= area.id %>')
+                        areaId: parseInt(areaId)
                     })
                 });
-                
+
                 if (response.ok) {
                     alert('Parish created successfully!');
                     document.getElementById('parishName').value = ''; // Clear input
@@ -282,6 +292,9 @@
             } catch (error) {
                 console.error('Error creating parish:', error);
                 alert('An error occurred while creating the parish.');
+            } finally {
+                creatingParish = false;
+                createParishSubmitBtn.disabled = false;
             }
         });
         
@@ -483,42 +496,7 @@
             }
         }
 
-        // Create Parish
-        document.getElementById('createParishSubmitBtn').addEventListener('click', async () => {
-            const parishName = document.getElementById('parishName').value;
-
-            if (!parishName) {
-                alert('Please enter the parish name.');
-                return;
-            }
-
-            try {
-                const areaId = document.getElementById('createParishModal').dataset.areaId;
-                const response = await fetch(`/areas/${areaId}/parishes/create`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        name: parishName,
-                        areaId: parseInt(areaId)
-                    })
-                });
-
-                if (response.ok) {
-                    alert('Parish created successfully!');
-                    document.getElementById('parishName').value = ''; // Clear input
-                    createParishModal.classList.add('hidden'); // Close the modal
-                    window.location.reload(); // Refresh the page to show the new parish
-                } else {
-                    const errorData = await response.json();
-                    alert(`Error: ${errorData.message || 'Failed to create parish'}`);
-                }
-            } catch (error) {
-                console.error('Error creating parish:', error);
-                alert('An error occurred while creating the parish.');
-            }
-        });
+        // (Removed duplicate Create Parish handler above; consolidated into single guarded handler)
 
         // Create Parish Officer
         document.getElementById('createParishOfficerBtn').addEventListener('click', async () => {
