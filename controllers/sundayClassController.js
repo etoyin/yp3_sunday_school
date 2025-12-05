@@ -477,6 +477,13 @@ const updateStudent = async (req, res) => {
     return res.status(200).json({ success: true, message: 'Student updated', data: student });
   } catch (error) {
     console.error('Error updating student:', error);
+    // Handle common validation/uniqueness errors more clearly
+    if (error && (error.name === 'SequelizeUniqueConstraintError' || error.parent?.code === 'ER_DUP_ENTRY')) {
+      return res.status(409).json({ success: false, message: 'Email already in use by another student' });
+    }
+    if (error && error.name === 'SequelizeValidationError') {
+      return res.status(400).json({ success: false, message: 'Validation failed. Please check your inputs.' });
+    }
     return res.status(500).json({ success: false, message: 'Error updating student' });
   }
 };

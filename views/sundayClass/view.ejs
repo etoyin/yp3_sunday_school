@@ -171,12 +171,17 @@
           lastName: document.getElementById('editLastName').value.trim(),
           dob: document.getElementById('editDob').value,
           phoneNumber: document.getElementById('editPhone').value.trim(),
-          email: document.getElementById('editEmail').value.trim(),
-          sundayClassId: document.getElementById('editClassId').value
+          email: document.getElementById('editEmail').value.trim()
         };
+        // Only include classId if present to avoid server-side validation issues
+        const classIdVal = document.getElementById('editClassId').value;
+        if (classIdVal !== undefined && classIdVal !== null && String(classIdVal).trim() !== '') {
+          payload.sundayClassId = parseInt(classIdVal, 10);
+        }
         const res = await fetch(`/students/${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify(payload)
         });
         if (!res.ok) {
